@@ -1,8 +1,10 @@
 package cz.utb.thesisapp;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.sip.SipSession;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -20,6 +23,7 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -34,8 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawer;
 
     private MyService mService;
-    private MainActivityViewModel mViewModel;
-
+    boolean mBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +50,13 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toggleUpdates();
+                if (mBound) {
+                    // Call a method from the LocalService.
+                    // However, if this call were something that might hang, then this request should
+                    // occur in a separate thread to avoid slowing down the activity performance.
+                    Log.d(TAG, "onClick: ~~" + mService.getRandomNumber());
+                    Log.d(TAG, "onClick: ~~Thread number " + Thread.currentThread().getId());
+                }
             }
         });
         Log.i(TAG, "~onCreate0");
@@ -63,102 +72,68 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         Log.d(TAG, "~~onCreate1");
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("bar"));
+    }
 
-        mViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        setObservers();
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive: ~~Recieved message by BroadcastReciever: " + intent.getAction());
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Thread t = new Thread() {
+            public void run() {
+                Log.d(TAG, "run: ~~ " + Thread.currentThread().getId());
+                getApplicationContext().bindService(
+                        new Intent(getApplicationContext(), MyService.class),
+                        connection,
+                        Context.BIND_AUTO_CREATE
+                );
+            }
+        };
+        t.start();
 
     }
 
-    private void setObservers() {
-        mViewModel.getBinder().observe(this, new Observer<MyService.MyBinder>() {
-            @Override
-            public void onChanged(MyService.MyBinder myBinder) {
-                if (myBinder == null) {
-                    Log.d(TAG, "onChanged: ~~unbound from service");
-                } else {
-                    Log.d(TAG, "onChanged: ~~bound to service.");
-                    mService = myBinder.getService();
-                }
-            }
-        });
-
-        mViewModel.getIsProgressBarUpdating().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(final Boolean aBoolean) {
-                final Handler handler = new Handler();
-                final Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        if (aBoolean) {
-                            if (mViewModel.getBinder().getValue() != null) { // meaning the service is bound
-                                if (mService.getProgress() == mService.getMaxValue()) {
-                                    mViewModel.setIsProgressBarUpdating(false);
-                                }
-//                                Log.d(TAG, "run: ~~mService.getProgress() " + mService.getProgress());
-//                                Log.d(TAG, "run: ~~mService.getMaxValue() " + mService.getMaxValue());
-                                Log.d(TAG, "run: ~~" + String.valueOf(100 * mService.getProgress() / mService.getMaxValue()) + "%");
-
-                            }
-                            handler.postDelayed(this, 100);
-                        } else {
-                            handler.removeCallbacks(this);
-                        }
-                    }
-                };
-
-                // control what the button shows
-                if (aBoolean) {
-                    Log.d(TAG, "onChanged: ~~pause");
-                    handler.postDelayed(runnable, 100);
-
-                } else {
-                    if (mService.getProgress() == mService.getMaxValue()) {
-                        Log.d(TAG, "onChanged: ~~restart");
-                    } else {
-                        Log.d(TAG, "onChanged: ~~start");
-                    }
-                }
-            }
-        });
-    }
-
-    private void toggleUpdates() {
-        if (mService != null) {
-            if (mService.getProgress() == mService.getMaxValue()) {
-                mService.resetTask();
-                Log.d(TAG, "toggleUpdates: ~~start");
-            } else {
-                if (mService.getIsPaused()) {
-                    mService.unPausePretendLongRunningTask();
-                    mViewModel.setIsProgressBarUpdating(true);
-                } else {
-                    mService.pausePretendLongRunningTask();
-                    mViewModel.setIsProgressBarUpdating(false);
-                }
-            }
-
+    public static class Receiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String data = intent.getStringExtra("data");
+            Log.d(TAG, "onReceive: ~~" + data);
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mViewModel.getBinder() != null) {
-            unbindService(mViewModel.getServiceConnection());
+        unbindService(connection);
+        mBound = false;
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+    }
+
+    /**
+     * Defines callbacks for service binding, passed to bindService()
+     */
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            MyService.LocalBinder binder = (MyService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
         }
-    }
 
-    private void startService(){
-        Intent serviceIntent = new Intent(this, MyService.class);
-        startService(serviceIntent);
-
-        bindService();
-    }
-
-    private void bindService(){
-        Intent serviceBindIntent =  new Intent(this, MyService.class);
-        bindService(serviceBindIntent, mViewModel.getServiceConnection(), Context.BIND_AUTO_CREATE);
-    }
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 
 
     //old
@@ -182,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ~~");
-        startService();
     }
 
     @Override
