@@ -1,6 +1,7 @@
 package cz.utb.thesisapp.ui.gallery;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,7 @@ import androidx.lifecycle.ViewModelProviders;
 import cz.utb.thesisapp.R;
 
 public class GalleryFragment extends Fragment {
-
+    private static final String TAG = "GalleryFragment";
     private GalleryViewModel galleryViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -30,6 +31,7 @@ public class GalleryFragment extends Fragment {
                 textView.setText(s);
             }
         });
+        Log.i(TAG, "::onCreateView");
         return root;
     }
 }
