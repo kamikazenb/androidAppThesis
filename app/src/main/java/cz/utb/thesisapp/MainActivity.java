@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                     // occur in a separate thread to avoid slowing down the activity performance.
                     Log.d(TAG, "onClick: ~~" + mService.getRandomNumber());
                     Log.d(TAG, "onClick: ~~Thread number " + Thread.currentThread().getId());
+                    mService.newClient("195.178.94.66");
                 }
             }
         });
