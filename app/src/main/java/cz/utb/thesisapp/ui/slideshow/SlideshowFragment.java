@@ -1,6 +1,8 @@
 package cz.utb.thesisapp.ui.slideshow;
 
+import android.media.audiofx.DynamicsProcessing;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import cz.utb.thesisapp.R;
 public class SlideshowFragment extends Fragment {
 
     private SlideshowViewModel slideshowViewModel;
+    private static final String TAG= "SlideshowFragment";
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -30,6 +33,7 @@ public class SlideshowFragment extends Fragment {
                 textView.setText(s);
             }
         });
+        Log.d(TAG, "onCreateView: ~~");
         return root;
     }
 }

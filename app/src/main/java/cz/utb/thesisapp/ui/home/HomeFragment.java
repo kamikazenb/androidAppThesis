@@ -86,10 +86,10 @@ public class HomeFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.hasExtra("command")) {
-                if (intent.getStringExtra("command").equals("greyButton")) {
+                if (intent.getStringExtra("command").equals("setChecked")) {
                     ((Switch) root.findViewById(R.id.bTest)).setChecked(true);
                 }
-                if (intent.getStringExtra("command").equals("unGreyButton")) {
+                if (intent.getStringExtra("command").equals("setUnchecked")) {
                     ((Switch) root.findViewById(R.id.bTest)).setChecked(false);
                 }
             } else {

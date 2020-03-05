@@ -31,7 +31,7 @@ public class GalleryFragment extends Fragment {
                 textView.setText(s);
             }
         });
-        Log.i(TAG, "::onCreateView");
+        Log.i(TAG, "~~onCreateView");
         return root;
     }
 }

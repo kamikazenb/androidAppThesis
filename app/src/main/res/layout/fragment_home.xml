@@ -28,38 +28,38 @@
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.85" />
 
-            <TextView
-                android:id="@+id/tvInfo"
+            <ImageView
+
+                android:adjustViewBounds="true"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="20dp"
-                android:text="Start kryonet"
+                android:src="@drawable/kryonet"
+                app:layout_constraintBottom_toBottomOf="@id/etKryoIP"
                 app:layout_constraintEnd_toStartOf="@id/guidelineLeft"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/etKryoIP" />
 
             <EditText
+                android:layout_marginTop="20dp"
                 android:id="@+id/etKryoIP"
-                android:text="195.178.94.66"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+                android:text="195.178.94.66"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="@id/tvInfo"/>
+                app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+                app:layout_constraintTop_toTopOf="parent" />
 
 
             <Switch
-                android:checked="false"
                 android:id="@+id/bTest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="false"
                 android:foregroundGravity="center"
-                app:layout_constraintBottom_toBottomOf="@id/tvInfo"
+                app:layout_constraintBottom_toBottomOf="@id/etKryoIP"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/etKryoIP" />
 
             <TextView
                 android:id="@+id/text_home"

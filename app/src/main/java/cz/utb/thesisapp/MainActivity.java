@@ -6,23 +6,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.sip.SipSession;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.core.view.GravityCompat;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -83,36 +77,43 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive: ~~start");
             if (intent.hasExtra("userInfo")) {
+                Log.d(TAG, "onReceive: ~~in if"+intent.getExtras().getString("userInfo"));
+
                 Toast.makeText(getApplicationContext(), intent.getExtras().getString("userInfo"), Toast.LENGTH_SHORT).show();
             }
 
         }
     };
 
-    public void startKryo(String ip){
+    public void startKryo(String ip) {
         mService.newClient(ip);
     }
-    public void stopKryo(){
+
+    public void stopKryo() {
         mService.clientStop();
+    }
+
+    private void startService() {
+        Log.d(TAG, "run: ~~ " + Thread.currentThread().getId());
+        Intent i = new Intent(this, MyService.class);
+        startService(i);
+        bindService();
+    }
+
+    private void bindService() {
+        Intent i = new Intent(this, MyService.class);
+        bindService(i, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Thread t = new Thread() {
-            public void run() {
-                Log.d(TAG, "run: ~~ " + Thread.currentThread().getId());
-                getApplicationContext().bindService(
-                        new Intent(getApplicationContext(), MyService.class),
-                        connection,
-                        Context.BIND_AUTO_CREATE
-                );
-            }
-        };
-        t.start();
+        startService();
 
     }
 
@@ -124,11 +125,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
-        unbindService(connection);
+        try {
+            unbindService(connection);
+        } catch (Exception e) {
+            Log.d(TAG, "~~" + e);
+        }
+
         mBound = false;
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
@@ -142,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            MyService.LocalBinder binder = (MyService.LocalBinder) service;
+            MyService.MyBinder binder = (MyService.MyBinder) service;
             mService = binder.getService();
             mBound = true;
         }
@@ -174,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        startService();
         Log.d(TAG, "onResume: ~~");
     }
 
