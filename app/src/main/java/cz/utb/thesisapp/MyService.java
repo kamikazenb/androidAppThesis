@@ -9,7 +9,9 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+
 import cz.utb.thesisapp.serialization.Network;
+
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -46,7 +48,8 @@ public class MyService extends Service {
         return binder;
     }
 
-    public void newClient(final String url){
+    public void newClient(final String ip) {
+        Log.d(TAG, "newClient: ~~creating");
         client = new Client();
         client.start();
         Network.register(client);
@@ -60,7 +63,7 @@ public class MyService extends Service {
             public void received(Connection connection, Object object) {
                 if (object instanceof Network.Info) {
                     Network.Info info = (Network.Info) object;
-                    Log.d(TAG, "received: ~~Network.info"+info.message);
+                    Log.d(TAG, "received: ~~Network.info" + info.message);
                 }
             }
         }));
@@ -68,22 +71,24 @@ public class MyService extends Service {
             public void run() {
                 try {
                     //195.178.94.66
-                    client.connect(5000, url, Network.port);
-                    // Server communication after connection can go here, or in Listener#connected().
+                    client.connect(5000, ip, Network.port);
+                    sendBroadcast("kryo", "userInfo", "connection to kryonet successful");
+                    sendBroadcast("kryo", "command", "greyButton");
                 } catch (IOException ex) {
                     ex.printStackTrace();
+                    sendBroadcast("kryo", "userInfo", "There is a connection error");
+                    sendBroadcast("kryo", "command", "unGreyButton");
                 }
             }
         };
         t.start();
-
     }
-
-    /** method for clients */
-    public int getRandomNumber() {
-        Log.d(TAG, "getRandomNumber: ~~threadNumber "+Thread.currentThread().getId());
-        LocalBroadcastManager.getInstance(MyService.this).sendBroadcast(new Intent("bar"));
-        return mGenerator.nextInt(100);
-
+    public void clientStop(){
+        client.stop();
+    }
+    private void sendBroadcast(String filter, String name, String value){
+        Intent i = new Intent(filter);
+        i.putExtra(name, value);
+        LocalBroadcastManager.getInstance(MyService.this).sendBroadcast(i);
     }
 }

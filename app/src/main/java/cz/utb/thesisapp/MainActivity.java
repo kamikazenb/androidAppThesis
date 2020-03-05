@@ -54,9 +54,7 @@ public class MainActivity extends AppCompatActivity {
                     // Call a method from the LocalService.
                     // However, if this call were something that might hang, then this request should
                     // occur in a separate thread to avoid slowing down the activity performance.
-                    Log.d(TAG, "onClick: ~~" + mService.getRandomNumber());
-                    Log.d(TAG, "onClick: ~~Thread number " + Thread.currentThread().getId());
-                    mService.newClient("195.178.94.66");
+
                 }
             }
         });
@@ -73,15 +71,33 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         Log.d(TAG, "~~onCreate1");
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("bar"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("kryo"));
+    }
+
+    public boolean ismBound() {
+        return mBound;
+    }
+
+    public void setmBound(boolean mBound) {
+        this.mBound = mBound;
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive: ~~Recieved message by BroadcastReciever: " + intent.getAction());
+            if (intent.hasExtra("userInfo")) {
+                Toast.makeText(getApplicationContext(), intent.getExtras().getString("userInfo"), Toast.LENGTH_SHORT).show();
+            }
+
         }
     };
+
+    public void startKryo(String ip){
+        mService.newClient(ip);
+    }
+    public void stopKryo(){
+        mService.clientStop();
+    }
 
     @Override
     protected void onStart() {
@@ -111,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        Log.d(TAG, "onStop: ");
         unbindService(connection);
         mBound = false;
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
