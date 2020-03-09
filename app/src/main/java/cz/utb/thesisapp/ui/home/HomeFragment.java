@@ -2,23 +2,20 @@ package cz.utb.thesisapp.ui.home;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,16 +24,16 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.google.android.material.snackbar.Snackbar;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import cz.utb.thesisapp.MainActivity;
-import cz.utb.thesisapp.MyService;
 import cz.utb.thesisapp.R;
 
 public class HomeFragment extends Fragment {
     private static final String TAG = "HomeFragment";
     private HomeViewModel homeViewModel;
-
+    private HashMap<String, String> kryoClients = new HashMap<>();
     View root;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -63,6 +60,7 @@ public class HomeFragment extends Fragment {
                             Log.d(TAG, "onClick: ~~");
                             String input = ((EditText) root.findViewById(R.id.etKryoIP)).getText().toString();
                             ((MainActivity) act).startKryo(input);
+
                         }
                     }
                 } else {
@@ -82,9 +80,52 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+    public void setDropdownMenu(final HashMap<String, String> source) {
+        ArrayList<String> spinnerArray = new ArrayList<String>(source.keySet());
+        Spinner spinnerDropdown = root.findViewById(R.id.spinner);
+        Activity act = getActivity();
+        if (act instanceof MainActivity) {
+            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>
+                    (act,
+                            android.R.layout.simple_spinner_dropdown_item,
+                            spinnerArray);
+
+            spinnerDropdown.setAdapter(spinnerArrayAdapter);
+            spinnerDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view,
+                                           int position, long id) {
+                    try {
+                        String token = (String) source.get((String) parent.getItemAtPosition(position));
+                        Activity act = getActivity();
+                        if (act instanceof MainActivity) {
+                            ((MainActivity) act).requestPartner(token);
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+        }
+
+    }
+
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra("users")) {
+                try {
+                    Bundle args = intent.getBundleExtra("users");
+                    HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
+                    setDropdownMenu(hashMap);
+                } catch (Exception e) {
+
+                }
+            }
             if (intent.hasExtra("command")) {
                 if (intent.getStringExtra("command").equals("setChecked")) {
                     ((Switch) root.findViewById(R.id.bTest)).setChecked(true);

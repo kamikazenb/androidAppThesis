@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -15,7 +16,7 @@
             android:layout_height="match_parent">
 
             <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guidelineLeft"
+                android:id="@+id/guideVerticalMid"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -28,27 +29,77 @@
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.85" />
 
-            <ImageView
-
-                android:adjustViewBounds="true"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/text_home"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/kryonet"
-                app:layout_constraintBottom_toBottomOf="@id/etKryoIP"
-                app:layout_constraintEnd_toStartOf="@id/guidelineLeft"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/etKryoIP" />
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv1"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:gravity="center"
+                android:text="User name:"
+                app:layout_constraintBottom_toBottomOf="@+id/etUserName"
+                app:layout_constraintEnd_toEndOf="@id/guideVerticalMid"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/etUserName" />
 
             <EditText
-                android:layout_marginTop="20dp"
+                android:id="@+id/etUserName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="10dp"
+                android:text="Android client"
+                app:layout_constraintEnd_toEndOf="@id/guidelineRight"
+                app:layout_constraintStart_toEndOf="@id/guideVerticalMid"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="409dp"
+                android:layout_height="3dp"
+                android:background="?android:attr/listDivider"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv1"
+                tools:layout_editor_absoluteX="1dp"
+                tools:layout_editor_absoluteY="46dp" />
+
+            <ImageView
+                android:id="@+id/ivKryonet"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/kryonet"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintTop_toBottomOf="@id/divider" />
+
+            <TextView
+                android:id="@+id/tv2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingVertical="20dp"
+                android:text="IP"
+                app:layout_constraintBottom_toBottomOf="@id/etKryoIP"
+                app:layout_constraintEnd_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ivKryonet" />
+
+            <EditText
                 android:id="@+id/etKryoIP"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="195.178.94.66"
+                app:layout_constraintBottom_toBottomOf="@id/tv2"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-                app:layout_constraintTop_toTopOf="parent" />
-
+                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintTop_toTopOf="@id/tv2" />
 
             <Switch
                 android:id="@+id/bTest"
@@ -56,24 +107,66 @@
                 android:layout_height="wrap_content"
                 android:checked="false"
                 android:foregroundGravity="center"
-                app:layout_constraintBottom_toBottomOf="@id/etKryoIP"
+                app:layout_constraintBottom_toBottomOf="@id/tv2"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
-                app:layout_constraintTop_toTopOf="@id/etKryoIP" />
+                app:layout_constraintTop_toTopOf="@id/tv2" />
 
             <TextView
-                android:id="@+id/text_home"
-                android:layout_width="match_parent"
+                android:id="@+id/tv3"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:textAlignment="center"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center"
+                android:paddingVertical="20dp"
+                android:text="Device to sync"
+                app:layout_constraintEnd_toStartOf="@id/guideVerticalMid"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/bTest" />
+                app:layout_constraintTop_toBottomOf="@+id/tv2" />
+
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:spinnerMode="dialog"
+                app:layout_constraintBottom_toBottomOf="@id/tv3"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintTop_toBottomOf="@+id/tv2" />
+
+            <TextView
+                android:id="@+id/tv4kryoStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingVertical="20dp"
+                android:text="Synchronized to"
+                app:layout_constraintEnd_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv3" />
+
+            <TextView
+                android:id="@+id/tvKryoStatusInfo"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="@+id/tv4kryoStatus"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintTop_toBottomOf="@+id/tv3" />
+
+
+            <ImageButton
+                android:id="@+id/ibKryoStatusAccept"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_done_black_24dp"
+                app:layout_constraintBottom_toBottomOf="@+id/tv4kryoStatus"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guidelineRight"
+                app:layout_constraintTop_toBottomOf="@id/tv3" />
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 

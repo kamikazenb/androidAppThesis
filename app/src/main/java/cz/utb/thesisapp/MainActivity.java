@@ -3,6 +3,7 @@ package cz.utb.thesisapp;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
@@ -26,14 +28,15 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import cz.utb.thesisapp.services.MyService;
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private AppBarConfiguration mAppBarConfiguration;
     private DrawerLayout drawer;
-
     private MyService mService;
     boolean mBound = false;
-
+    Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,9 +44,13 @@ public class MainActivity extends AppCompatActivity {
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
+        context = this;
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                    showAlertDialog("suhlasis so sparovanim?");
+
+
                 if (mBound) {
                     // Call a method from the LocalService.
                     // However, if this call were something that might hang, then this request should
@@ -76,11 +83,47 @@ public class MainActivity extends AppCompatActivity {
         this.mBound = mBound;
     }
 
+    private void showAlertDialog(String showDialog){
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+        builder1.setMessage(showDialog);
+        builder1.setCancelable(false);
+
+        builder1.setPositiveButton(
+                "Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        dialog.cancel();
+                    }
+                });
+
+        builder1.setNegativeButton(
+                "No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        try {
+            alert11.show();
+        }catch (Exception e){
+            Log.d(TAG, "onClick: ~~"+e);
+        }
+    }
+
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive: ~~start");
+            if (intent.hasExtra("acceptPair")) {
+                Intent i = new Intent(getApplicationContext(), PopAcceptPairActivity.class);
+                i.putExtra("connectionType", intent.hasExtra("connectionType"));
+                i.putExtra("partnerName", intent.hasExtra("parnterName"));
+                startActivityForResult(i, 666);
+            }
             if (intent.hasExtra("userInfo")) {
                 Log.d(TAG, "onReceive: ~~in if"+intent.getExtras().getString("userInfo"));
 
@@ -91,11 +134,20 @@ public class MainActivity extends AppCompatActivity {
     };
 
     public void startKryo(String ip) {
-        mService.newClient(ip);
+        if(ismBound()){
+            mService.kryoClient.newClients(ip);
+        }
     }
 
     public void stopKryo() {
-        mService.clientStop();
+        if(ismBound()){
+            mService.kryoClient.stopClients();
+        }
+    }
+    public void requestPartner(String token) {
+        if(ismBound()){
+            mService.kryoClient.requestPartner(token);
+        }
     }
 
     private void startService() {
