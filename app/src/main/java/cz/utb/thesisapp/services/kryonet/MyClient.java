@@ -1,4 +1,4 @@
-package cz.utb.thesisapp.kryonet;
+package cz.utb.thesisapp.services.kryonet;
 
 import com.esotericsoftware.kryonet.Client;
 

@@ -13,7 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.widget.Toast;
-
+import cz.utb.thesisapp.services.*;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -28,13 +28,15 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.util.HashMap;
+
 import cz.utb.thesisapp.services.MyService;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private AppBarConfiguration mAppBarConfiguration;
     private DrawerLayout drawer;
-    private MyService mService;
+    public MyService mService;
     boolean mBound = false;
     Context context;
     @Override
@@ -48,8 +50,6 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    showAlertDialog("suhlasis so sparovanim?");
-
 
                 if (mBound) {
                     // Call a method from the LocalService.
@@ -83,29 +83,32 @@ public class MainActivity extends AppCompatActivity {
         this.mBound = mBound;
     }
 
-    private void showAlertDialog(String showDialog){
-        AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-        builder1.setMessage(showDialog);
-        builder1.setCancelable(false);
-
-        builder1.setPositiveButton(
-                "Yes",
+    private void showAlertDialog(String showDialog, final String tokenSeeker, final String service){
+        AlertDialog.Builder aletBuilder = new AlertDialog.Builder(context);
+        aletBuilder.setMessage(showDialog);
+        aletBuilder.setCancelable(false);
+        aletBuilder.setPositiveButton(
+                "Accept",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-
+                        if(service.equals("kryo")){
+                            mService.kryoClient.sendPairAcceptationResult(tokenSeeker, true);
+                        }
+                        dialog.cancel();
+                    }
+                });
+        aletBuilder.setNegativeButton(
+                "Decline",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        if(service.equals("kryo")){
+                            mService.kryoClient.unPair();
+                        }
                         dialog.cancel();
                     }
                 });
 
-        builder1.setNegativeButton(
-                "No",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog alert11 = builder1.create();
+        AlertDialog alert11 = aletBuilder.create();
         try {
             alert11.show();
         }catch (Exception e){
@@ -119,10 +122,9 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive: ~~start");
             if (intent.hasExtra("acceptPair")) {
-                Intent i = new Intent(getApplicationContext(), PopAcceptPairActivity.class);
-                i.putExtra("connectionType", intent.hasExtra("connectionType"));
-                i.putExtra("partnerName", intent.hasExtra("parnterName"));
-                startActivityForResult(i, 666);
+                HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("acceptPair");
+                showAlertDialog("Do you accept sync with: \n \n"+hashMap.values().toArray()[0].toString(),
+                        hashMap.keySet().toArray()[0].toString(), "kryo");
             }
             if (intent.hasExtra("userInfo")) {
                 Log.d(TAG, "onReceive: ~~in if"+intent.getExtras().getString("userInfo"));
@@ -144,10 +146,18 @@ public class MainActivity extends AppCompatActivity {
             mService.kryoClient.stopClients();
         }
     }
+
     public void requestPartner(String token) {
         if(ismBound()){
             mService.kryoClient.requestPartner(token);
         }
+    }
+    public void kryoUnpair(){
+        mService.kryoClient.unPair();
+    }
+
+    public void kryoPairResponse(String seekerToken, boolean response){
+        mService.kryoClient.sendPairAcceptationResult(seekerToken, response);
     }
 
     private void startService() {
@@ -177,7 +187,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -191,12 +200,10 @@ public class MainActivity extends AppCompatActivity {
         mBound = false;
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
-
     /**
      * Defines callbacks for service binding, passed to bindService()
      */
     private ServiceConnection connection = new ServiceConnection() {
-
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
@@ -205,14 +212,11 @@ public class MainActivity extends AppCompatActivity {
             mService = binder.getService();
             mBound = true;
         }
-
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
         }
     };
-
-
     //old
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

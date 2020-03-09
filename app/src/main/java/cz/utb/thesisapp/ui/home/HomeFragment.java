@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -49,28 +50,42 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        Switch ib = root.findViewById(R.id.bTest);
-        ib.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        ((Switch) root.findViewById(R.id.bTest)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Activity act = getActivity();
-                if (((Switch) root.findViewById(R.id.bTest)).isChecked()) {
+                if (isChecked) {
                     if (act instanceof MainActivity) {
                         if (((MainActivity) act).ismBound()) {
                             Log.d(TAG, "onClick: ~~");
                             String input = ((EditText) root.findViewById(R.id.etKryoIP)).getText().toString();
                             ((MainActivity) act).startKryo(input);
-
                         }
                     }
+                    ((Spinner) root.findViewById(R.id.spinner)).setClickable(true);
                 } else {
                     if (((MainActivity) act).ismBound()) {
                         ((MainActivity) act).stopKryo();
                     }
-
+                    ((Spinner) root.findViewById(R.id.spinner)).setClickable(false);
+                    ((Switch) root.findViewById(R.id.switchSynced)).setClickable(false);
+                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(false);
                 }
             }
         });
+        ((Switch) root.findViewById(R.id.switchSynced)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+
+                }else {
+                    ((TextView)root.findViewById(R.id.tvKryoPairName)).setText("");
+                    Activity act = getActivity();
+                    if (act instanceof MainActivity) {
+                        ((MainActivity) act).kryoUnpair();
+                    }
+                }
+            }
+        });
+
         Log.d(TAG, "onCreateView: ~~");
         Activity act = getActivity();
         if (act instanceof MainActivity) {
@@ -81,27 +96,32 @@ public class HomeFragment extends Fragment {
     }
 
     public void setDropdownMenu(final HashMap<String, String> source) {
-        ArrayList<String> spinnerArray = new ArrayList<String>(source.keySet());
+        ArrayList<String> spinnerArray = new ArrayList<String>();
+        spinnerArray.add("Select:");
+        final ArrayList<String> keys = new ArrayList<String>(source.keySet());
+        spinnerArray.addAll(source.values());
         Spinner spinnerDropdown = root.findViewById(R.id.spinner);
         Activity act = getActivity();
         if (act instanceof MainActivity) {
             ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>
-                    (act,
-                            android.R.layout.simple_spinner_dropdown_item,
+                    (act, android.R.layout.simple_spinner_dropdown_item,
                             spinnerArray);
-
             spinnerDropdown.setAdapter(spinnerArrayAdapter);
             spinnerDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view,
                                            int position, long id) {
-                    try {
-                        String token = (String) source.get((String) parent.getItemAtPosition(position));
-                        Activity act = getActivity();
-                        if (act instanceof MainActivity) {
-                            ((MainActivity) act).requestPartner(token);
+                    if (position == 0) {
+                        Log.d(TAG, "onItemSelected: ~~0");
+                    } else {
+                        Log.d(TAG, "onItemSelected: ~~else");
+                        try {
+                            Activity act = getActivity();
+                            if (act instanceof MainActivity) {
+                                ((MainActivity) act).requestPartner(keys.get(position - 1));
+                            }
+                        } catch (Exception e) {
                         }
-                    } catch (Exception e) {
                     }
                 }
 
@@ -119,9 +139,24 @@ public class HomeFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             if (intent.hasExtra("users")) {
                 try {
-                    Bundle args = intent.getBundleExtra("users");
                     HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
                     setDropdownMenu(hashMap);
+                } catch (Exception e) {
+
+                }
+            }
+            if (intent.hasExtra("paired")) {
+                try {
+                    ((TextView)root.findViewById(R.id.tvKryoPairName)).setText(intent.getStringExtra("paired"));
+                    ((Switch)root.findViewById(R.id.switchSynced)).setChecked(true);
+                    ((Switch)root.findViewById(R.id.switchSynced)).setClickable(true);
+                } catch (Exception e) {
+
+                }
+            }
+            if (intent.hasExtra("unpaired")) {
+                try {
+                    ((Switch)root.findViewById(R.id.switchSynced)).setChecked(false);
                 } catch (Exception e) {
 
                 }

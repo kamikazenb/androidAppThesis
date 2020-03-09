@@ -7,7 +7,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import cz.utb.thesisapp.kryonet.KryoClient;
+import cz.utb.thesisapp.services.kryonet.KryoClient;
 
 import java.util.Random;
 
@@ -32,7 +32,7 @@ public class MyService extends Service {
      */
     public class MyBinder extends Binder {
 
-        MyService getService() {
+       public MyService getService() {
             // Return this instance of LocalService so clients can call public methods
             return MyService.this;
         }

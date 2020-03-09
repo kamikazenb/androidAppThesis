@@ -24,6 +24,7 @@ public class Broadcast {
         LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
     }
 
+
     public void sendBroadcastArrayList(String filter, String name, ArrayList<String> values) {
         Intent i = new Intent(filter);
         Bundle args = new Bundle();

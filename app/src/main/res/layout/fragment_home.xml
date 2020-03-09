@@ -16,11 +16,25 @@
             android:layout_height="match_parent">
 
             <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideVerticalMid"
+                android:id="@+id/guideFarLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.15" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideLeft1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.3" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideLeft2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.33" />
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guidelineRight"
@@ -31,35 +45,35 @@
 
             <TextView
                 android:id="@+id/text_home"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tv1"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:gravity="center"
-                android:text="User name:"
-                app:layout_constraintBottom_toBottomOf="@+id/etUserName"
-                app:layout_constraintEnd_toEndOf="@id/guideVerticalMid"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:paddingVertical="20dp"
+                android:text="User name"
+                app:layout_constraintEnd_toEndOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/etUserName" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
                 android:id="@+id/etUserName"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="10dp"
+                android:layout_height="0dp"
                 android:text="Android client"
+                app:layout_constraintBottom_toBottomOf="@+id/tv1"
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
-                app:layout_constraintStart_toEndOf="@id/guideVerticalMid"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toEndOf="@id/guideLeft2"
+                app:layout_constraintTop_toTopOf="@id/tv1" />
 
             <View
                 android:id="@+id/divider"
-                android:layout_width="409dp"
+                android:layout_width="0dp"
                 android:layout_height="3dp"
                 android:background="?android:attr/listDivider"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -76,29 +90,29 @@
                 android:adjustViewBounds="true"
                 android:src="@drawable/kryonet"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintStart_toStartOf="@id/guideFarLeft"
                 app:layout_constraintTop_toBottomOf="@id/divider" />
 
             <TextView
                 android:id="@+id/tv2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:gravity="right"
                 android:paddingVertical="20dp"
                 android:text="IP"
                 app:layout_constraintBottom_toBottomOf="@id/etKryoIP"
-                app:layout_constraintEnd_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/ivKryonet" />
 
             <EditText
                 android:id="@+id/etKryoIP"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="195.178.94.66"
+                android:layout_height="0dp"
+                android:text="192.168.1.178"
                 app:layout_constraintBottom_toBottomOf="@id/tv2"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintStart_toStartOf="@id/guideLeft2"
                 app:layout_constraintTop_toTopOf="@id/tv2" />
 
             <Switch
@@ -116,52 +130,54 @@
                 android:id="@+id/tv3"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:gravity="right"
                 android:paddingVertical="20dp"
                 android:text="Device to sync"
-                app:layout_constraintEnd_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv2" />
 
             <Spinner
                 android:id="@+id/spinner"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_height="0dp"
+                android:clickable="false"
                 android:spinnerMode="dialog"
                 app:layout_constraintBottom_toBottomOf="@id/tv3"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
-                app:layout_constraintTop_toBottomOf="@+id/tv2" />
+                app:layout_constraintStart_toStartOf="@id/guideLeft2"
+                app:layout_constraintTop_toTopOf="@+id/tv3" />
 
             <TextView
-                android:id="@+id/tv4kryoStatus"
+                android:id="@+id/tv4"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:gravity="end"
                 android:paddingVertical="20dp"
                 android:text="Synchronized to"
-                app:layout_constraintEnd_toStartOf="@id/guideVerticalMid"
+                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv3" />
 
             <TextView
-                android:id="@+id/tvKryoStatusInfo"
+                android:paddingVertical="20dp"
+                android:id="@+id/tvKryoPairName"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:gravity="center"
-                app:layout_constraintBottom_toBottomOf="@+id/tv4kryoStatus"
+                android:layout_height="wrap_content"
+                android:gravity="left"
+                android:textColor="#000"
+                app:layout_constraintBottom_toBottomOf="@+id/tv4"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintStart_toStartOf="@id/guideVerticalMid"
-                app:layout_constraintTop_toBottomOf="@+id/tv3" />
+                app:layout_constraintStart_toStartOf="@id/guideLeft2"
+                app:layout_constraintTop_toTopOf="@+id/tv4" />
 
 
-            <ImageButton
-                android:id="@+id/ibKryoStatusAccept"
+            <Switch
+                android:id="@+id/switchSynced"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_done_black_24dp"
-                app:layout_constraintBottom_toBottomOf="@+id/tv4kryoStatus"
+                android:clickable="false"
+                app:layout_constraintBottom_toBottomOf="@+id/tv4"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
                 app:layout_constraintTop_toBottomOf="@id/tv3" />
