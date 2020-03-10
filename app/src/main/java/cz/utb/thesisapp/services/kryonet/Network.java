@@ -17,6 +17,12 @@ public class Network {
         kryo.register(Info.class);
         kryo.register(RegisteredUsers.class);
         kryo.register(Pair.class);
+        kryo.register(TouchMove.class);
+        kryo.register(TouchStart.class);
+        kryo.register(TouchTolerance.class);
+        kryo.register(TouchUp.class);
+        kryo.register(CleanCanvas.class);
+        kryo.register(ScreenSize.class);
     }
     static public class Pair{
         public String tokenPairSeeker;
@@ -40,5 +46,27 @@ public class Network {
 
     static public class Info{
         public String message;
+    }
+    static public class TouchStart{
+        float x;
+        float y;
+    }
+    static public class TouchMove{
+        float x;
+        float y;
+    }
+    static public class CleanCanvas{
+        boolean cleanCanvas;
+    }
+
+    static public class TouchTolerance{
+        float TOUCH_TOLERANCE;
+    }
+    static public  class TouchUp{
+        boolean touchUp;
+    }
+    static public class ScreenSize{
+        float x;
+        float y;
     }
 }

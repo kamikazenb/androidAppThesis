@@ -54,12 +54,11 @@
         app:layout_constraintTop_toTopOf="@id/guideLineTop"
         app:layout_constraintStart_toStartOf="parent"
         android:text="Paired app:"/>
-    <com.mukesh.DrawingView
+    <cz.utb.thesisapp.ui.touch.MyDrawingView
         android:id="@+id/scratch_pad_partner"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="@id/guideLineTop"
-
         app:layout_constraintBottom_toBottomOf="@id/guideLineMid"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -69,7 +68,7 @@
         app:layout_constraintTop_toTopOf="@id/guideLineMid"
         app:layout_constraintStart_toStartOf="parent"
         android:text="This app:"/>
-    <com.mukesh.DrawingView
+    <cz.utb.thesisapp.ui.touch.MyDrawingView
         android:id="@+id/scratch_pad"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -136,6 +136,21 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    public void sendTouchStart(float x, float y){
+        if(ismBound()){
+            mService.kryoClient.sendTouchStart(x, y);
+        }
+    }
+    public void sendTouchMove(float x, float y){
+        if(ismBound()){
+            mService.kryoClient.sendTouchMove(x, y);
+        }
+    }
+    public void sendTouchUp(boolean state){
+        if(ismBound()){
+            mService.kryoClient.sendTouchUp(state);
+        }
+    }
     public void startKryo(String ip) {
         if(ismBound()){
             mService.kryoClient.newClients(ip);
