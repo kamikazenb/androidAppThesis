@@ -22,6 +22,11 @@ android {
     }
 
 }
+allprojects {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -37,6 +42,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
+    implementation 'com.github.mukeshsolanki:DrawingView-Android:1.0.11'
     implementation 'com.esotericsoftware:kryonet:2.22.0-RC1'
     implementation 'fr.bmartel:jspeedtest:1.31.3'
 }

@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         Log.i(TAG, "~onCreate0");
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
