@@ -56,5 +56,10 @@ public class Broadcast {
         i.putExtra(name, value);
         LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
     }
+    public void sendMainActivity(String command, boolean value){
+        Intent i = new Intent("MainActivity");
+        i.putExtra(command, value);
+        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
+    }
 
 }

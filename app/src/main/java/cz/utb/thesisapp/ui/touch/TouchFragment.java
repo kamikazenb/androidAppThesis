@@ -21,6 +21,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.github.clans.fab.FloatingActionButton;
+
 import java.util.HashMap;
 
 import cz.utb.thesisapp.MainActivity;
@@ -63,9 +65,20 @@ public class TouchFragment extends Fragment {
             dvPairedApp.act = act;
 
             LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("touch"));
+            LocalBroadcastManager.getInstance(act).registerReceiver(maReiver, new IntentFilter("MainActivity"));
         }
+
         return root;
     }
+    private final BroadcastReceiver maReiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent i) {
+            if (i.hasExtra("refresh")) {
+                dvPairedApp.clear();
+                dvThisApp.clear();
+            }
+        }
+    };
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override

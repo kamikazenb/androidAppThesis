@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import cz.utb.thesisapp.services.*;
 
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -88,6 +89,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Fragment home = getVisibleFragment();
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("kryo"));
+
+        ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mService.broadcast.sendMainActivity("refresh", true);
+                ((FloatingActionMenu)findViewById(R.id.floatingActionMenu)).close(true);
+            }
+        });
+        ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabEdit)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mService.broadcast.sendMainActivity("edit", true);
+                ((FloatingActionMenu)findViewById(R.id.floatingActionMenu)).close(true);
+            }
+        });
         Log.d(TAG, "onCreate: ~~");
     }
 
@@ -287,10 +303,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void startKryo(String ip) {
+    public void startKryo(String ip, String userName) {
         if (ismBound()) {
             if (!mService.kryoClient.isClientsConnected()) {
-                mService.kryoClient.newClients(ip);
+                mService.kryoClient.newClients(ip, userName);
             }
         }
     }

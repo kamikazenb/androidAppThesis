@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +38,8 @@ public class HomeFragment extends Fragment {
     private HomeViewModel homeViewModel;
     private HashMap<String, String> kryoClients = new HashMap<>();
     View root;
+    String userName;
+    SharedPreferences sharedPreferences;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -49,8 +53,21 @@ public class HomeFragment extends Fragment {
                 textView.setText(s);
             }
         });
+        Activity act = getActivity();
+        if (act instanceof MainActivity) {
+            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(act);
+            userName = sharedPreferences.getString("userName", "null");
+            if(userName.equals("null")){
+                userName = "Android client";
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("userName", userName);
+                editor.commit();
+            }
+        }
 
-        ((Switch) root.findViewById(R.id.bTest)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        ((EditText)root.findViewById(R.id.etUserName)).setText(userName);
+
+        ((Switch) root.findViewById(R.id.sKryoIP)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Activity act = getActivity();
                 if (isChecked) {
@@ -58,7 +75,14 @@ public class HomeFragment extends Fragment {
                         if (((MainActivity) act).ismBound()) {
                             Log.d(TAG, "onClick: ~~");
                             String input = ((EditText) root.findViewById(R.id.etKryoIP)).getText().toString();
-                            ((MainActivity) act).startKryo(input);
+                            userName = ((EditText)root.findViewById(R.id.etUserName)).getText().toString();
+                            if(userName.equals(null) || userName.length()<1){
+                                userName = "Android client";
+                            }
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("userName", userName);
+                            editor.commit();
+                            ((MainActivity) act).startKryo(input, userName);
                         }
                     }
                     ((Spinner) root.findViewById(R.id.spinner)).setClickable(true);
@@ -89,14 +113,22 @@ public class HomeFragment extends Fragment {
         });
 
         Log.d(TAG, "onCreateView: ~~");
-        Activity act = getActivity();
         if (act instanceof MainActivity) {
             LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("kryo"));
         }
+        LocalBroadcastManager.getInstance(act).registerReceiver(maReiver, new IntentFilter("MainActivity"));
+
 
         return root;
     }
-
+    private final BroadcastReceiver maReiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent i) {
+            if (i.hasExtra("refresh")) {
+                ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(false);
+            }
+        }
+    };
     public void setDropdownMenu(final HashMap<String, String> source) {
         ArrayList<String> spinnerArray = new ArrayList<String>();
         spinnerArray.add("Select:");
@@ -167,10 +199,10 @@ public class HomeFragment extends Fragment {
             }
             if (intent.hasExtra("command")) {
                 if (intent.getStringExtra("command").equals("setChecked")) {
-                    ((Switch) root.findViewById(R.id.bTest)).setChecked(true);
+                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(true);
                 }
                 if (intent.getStringExtra("command").equals("setUnchecked")) {
-                    ((Switch) root.findViewById(R.id.bTest)).setChecked(false);
+                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(false);
                 }
             } else {
                 // Do something else

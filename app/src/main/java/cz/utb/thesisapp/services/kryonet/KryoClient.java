@@ -29,7 +29,7 @@ public class KryoClient {
         this.broadcast = broadcast;
     }
 
-    private void addClients(final String ip, final MyClient client) {
+    private void addClients(final String ip, final MyClient client, final String userName) {
         client.start();
         Network.register(client);
         client.klientName = "AndoidClient" + String.valueOf(android.os.Process.myPid());
@@ -38,8 +38,8 @@ public class KryoClient {
         client.addListener(new Listener.ThreadedListener(new Listener() {
             public void connected(Connection connection) {
                 Network.Register register = new Network.Register();
-                register.systemName = "AndoidClient" + String.valueOf(android.os.Process.myPid());
-                register.userName = register.systemName;
+                register.userName = userName;
+                register.systemName = userName.trim() + String.valueOf(android.os.Process.myPid());
                 register.token = client.token;
                 client.sendTCP(register);
             }
@@ -253,11 +253,11 @@ public class KryoClient {
         }
     }
 
-    public void newClients(String ip) {
+    public void newClients(String ip, String userName) {
         clientSenderReceiver = new MyClient();
-        addClients(ip, clientSenderReceiver);
+        addClients(ip, clientSenderReceiver, userName);
         clientReceiver = new MyClient();
-        addClients(ip, clientReceiver);
+        addClients(ip, clientReceiver, userName);
     }
 
     public void stopClients() {
