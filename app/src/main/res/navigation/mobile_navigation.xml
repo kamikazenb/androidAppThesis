@@ -6,34 +6,25 @@
     app:startDestination="@+id/nav_home">
 
     <fragment
+
+        app:launchSingleTop="true"
         android:id="@+id/nav_home"
         android:name="cz.utb.thesisapp.ui.home.HomeFragment"
         android:label="@string/menu_home"
+        android:tag="fragment_home"
         tools:layout="@layout/fragment_home">
-
         <action
-            android:id="@+id/action_HomeFragment_to_HomeSecondFragment"
-            app:destination="@id/nav_home_second" />
-    </fragment>
-    <fragment
-        android:id="@+id/nav_home_second"
-        android:name="cz.utb.thesisapp.ui.home.HomeSecondFragment"
-        android:label="@string/home_second"
-        tools:layout="@layout/fragment_home_second">
-        <action
-            android:id="@+id/action_HomeSecondFragment_to_HomeFragment"
-            app:destination="@id/nav_home" />
-
-        <argument
-            android:name="myArg"
-            app:argType="string" />
+            android:id="@+id/action_nav_home_self"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true" />
     </fragment>
 
     <fragment
         android:id="@+id/nav_gallery"
         android:name="cz.utb.thesisapp.ui.touch.TouchFragment"
         android:label="@string/menu_touch"
-        tools:layout="@layout/fragment_touch" />
+        tools:layout="@layout/fragment_touch"
+        android:tag="fragment_touch"/>
 
     <fragment
         android:id="@+id/nav_slideshow"

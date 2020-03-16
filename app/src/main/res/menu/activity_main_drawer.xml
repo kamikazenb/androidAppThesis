@@ -5,10 +5,12 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:tag="fragment_home"
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_menu_camera"
             android:title="@string/menu_home" />
         <item
+            android:tag="fragment_touch"
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
             android:title="@string/menu_touch" />

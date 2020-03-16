@@ -16,6 +16,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -57,7 +58,8 @@ public class TouchFragment extends Fragment {
         if (act instanceof MainActivity) {
             dvPairedApp = (MyDrawingView) root.findViewById(R.id.scratch_pad_partner);
             dvPairedApp.setThisApp(false);
-            dvPairedApp.paint.setColor(Color.YELLOW);
+            int color = ContextCompat.getColor(act, R.color.colorPrimary);
+            dvPairedApp.paint.setColor(color);
             dvPairedApp.act = act;
 
             LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("touch"));
@@ -95,4 +97,22 @@ public class TouchFragment extends Fragment {
 
         }
     };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ~~");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ~~");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop: ~~");
+    }
 }

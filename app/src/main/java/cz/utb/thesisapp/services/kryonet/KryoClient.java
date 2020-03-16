@@ -14,6 +14,7 @@ import cz.utb.thesisapp.services.Broadcast;
 import cz.utb.thesisapp.services.TokenGenerator;
 
 public class KryoClient {
+    private boolean clientsConnected = false;
     private static final String TAG = "KryoClient";
     private TokenGenerator tokenGenerator = new TokenGenerator();
     private Broadcast broadcast;
@@ -41,6 +42,10 @@ public class KryoClient {
                 register.userName = register.systemName;
                 register.token = client.token;
                 client.sendTCP(register);
+            }
+
+            public void disconnected(Connection connection) {
+                setClientsConnected(false);
             }
 
             public void received(Connection connection, Object object) {
@@ -85,13 +90,12 @@ public class KryoClient {
                 try {
                     //195.178.94.66
                     client.connect(5000, ip, Network.port);
-                    broadcast.sendServiceString("kryo", "userInfo", "connections to kryonet successful");
-                    broadcast.sendServiceString("kryo", "command", "setChecked");
+                    broadcast.sendServiceString(filter, "userInfo", "connections to kryonet successful");
+                    broadcast.sendServiceString(filter, "command", "setChecked");
+                    clientsConnected = true;
                 } catch (IOException ex) {
                     ex.printStackTrace();
-                    broadcast.sendServiceString("kryo", "userInfo", "There is a connection error");
-                    broadcast.sendServiceString("kryo", "command", "setUnchecked");
-                    stopClients();
+                    setClientsConnected(false);
                 }
             }
         };
@@ -184,6 +188,7 @@ public class KryoClient {
         };
         t.start();
     }
+
     public void sendTouchMove(float x, float y) {
         Network.TouchMove touch = new Network.TouchMove();
         touch.x = x;
@@ -196,6 +201,7 @@ public class KryoClient {
         };
         t.start();
     }
+
     public void sendTouchUp(boolean state) {
         Network.TouchUp touch = new Network.TouchUp();
         touch.touchUp = state;
@@ -207,7 +213,6 @@ public class KryoClient {
         };
         t.start();
     }
-
 
     public void unPair() {
         Network.Pair pair = new Network.Pair();
@@ -258,10 +263,25 @@ public class KryoClient {
     public void stopClients() {
         try {
             clientSenderReceiver.stop();
+        } catch (Exception e) {
+        }
+        try {
             clientReceiver.stop();
         } catch (Exception e) {
-
         }
-        broadcast.sendServiceString("kryo", "userInfo", "Connection closed");
+        broadcast.sendServiceString(filter, "userInfo", "Connection closed");
+    }
+
+    public boolean isClientsConnected() {
+        return clientsConnected;
+    }
+
+    public void setClientsConnected(boolean clientsConnected) {
+        this.clientsConnected = clientsConnected;
+        if (!clientsConnected) {
+            broadcast.sendServiceString(filter, "userInfo", "There is a connection error");
+            broadcast.sendServiceString(filter, "command", "setUnchecked");
+            stopClients();
+        }
     }
 }

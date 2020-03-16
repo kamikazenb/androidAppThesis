@@ -69,15 +69,17 @@ public class HomeFragment extends Fragment {
                     ((Spinner) root.findViewById(R.id.spinner)).setClickable(false);
                     ((Switch) root.findViewById(R.id.switchSynced)).setClickable(false);
                     ((Switch) root.findViewById(R.id.switchSynced)).setChecked(false);
+                    Spinner spinnerDropdown = root.findViewById(R.id.spinner);
+                    spinnerDropdown.setAdapter(null);
                 }
             }
         });
         ((Switch) root.findViewById(R.id.switchSynced)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
 
-                }else {
-                    ((TextView)root.findViewById(R.id.tvKryoPairName)).setText("");
+                } else {
+                    ((TextView) root.findViewById(R.id.tvKryoPairName)).setText("");
                     Activity act = getActivity();
                     if (act instanceof MainActivity) {
                         ((MainActivity) act).kryoUnpair();
@@ -135,8 +137,10 @@ public class HomeFragment extends Fragment {
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
         @Override
         public void onReceive(Context context, Intent intent) {
+
             if (intent.hasExtra("users")) {
                 try {
                     HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
@@ -147,16 +151,16 @@ public class HomeFragment extends Fragment {
             }
             if (intent.hasExtra("paired")) {
                 try {
-                    ((TextView)root.findViewById(R.id.tvKryoPairName)).setText(intent.getStringExtra("paired"));
-                    ((Switch)root.findViewById(R.id.switchSynced)).setChecked(true);
-                    ((Switch)root.findViewById(R.id.switchSynced)).setClickable(true);
+                    ((TextView) root.findViewById(R.id.tvKryoPairName)).setText(intent.getStringExtra("paired"));
+                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(true);
+                    ((Switch) root.findViewById(R.id.switchSynced)).setClickable(true);
                 } catch (Exception e) {
 
                 }
             }
             if (intent.hasExtra("unpaired")) {
                 try {
-                    ((Switch)root.findViewById(R.id.switchSynced)).setChecked(false);
+                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(false);
                 } catch (Exception e) {
 
                 }
@@ -171,8 +175,24 @@ public class HomeFragment extends Fragment {
             } else {
                 // Do something else
             }
-
         }
     };
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ~~");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ~~");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop: ~~");
+    }
 }
