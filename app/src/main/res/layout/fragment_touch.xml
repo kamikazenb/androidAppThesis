@@ -2,9 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:tag="fragment_touch"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:tag="fragment_touch"
     tools:context=".ui.touch.TouchFragment">
 
     <androidx.constraintlayout.widget.Guideline
@@ -20,8 +20,9 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.55" />
+
     <View
-        android:id="@+id/divider"
+        android:id="@+id/topDivider"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:background="?android:attr/listDivider"
@@ -30,7 +31,9 @@
         app:layout_constraintTop_toBottomOf="@+id/guideLineTop"
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="46dp" />
+
     <View
+        android:id="@+id/bottomDivider"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:background="?android:attr/listDivider"
@@ -39,50 +42,46 @@
         app:layout_constraintTop_toBottomOf="@+id/guideLineMid"
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="46dp" />
+
     <com.github.mikephil.charting.charts.LineChart
+
         android:id="@+id/chart"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/guideLineTop"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/guideLineTop"/>/>
-<!--    <TextView-->
-<!--        android:id="@+id/tvTouchInfo"-->
-<!--        android:text="info"-->
-<!--        android:gravity="left"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="@id/guideLineTop"/>-->
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/guideLineTop"
+        android:text="Paired app:"
         app:layout_constraintStart_toStartOf="parent"
-        android:text="Paired app:"/>
+        app:layout_constraintTop_toTopOf="@id/guideLineTop" />
+
     <cz.utb.thesisapp.ui.touch.MyDrawingView
         android:id="@+id/scratch_pad_partner"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="@id/guideLineTop"
         app:layout_constraintBottom_toBottomOf="@id/guideLineMid"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="@id/topDivider" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/guideLineMid"
+        android:text="This app:"
         app:layout_constraintStart_toStartOf="parent"
-        android:text="This app:"/>
+        app:layout_constraintTop_toTopOf="@id/guideLineMid" />
+
     <cz.utb.thesisapp.ui.touch.MyDrawingView
         android:id="@+id/scratch_pad"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="@id/guideLineMid"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@+id/bottomDivider" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -23,6 +23,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -44,6 +45,12 @@ public class TouchFragment extends Fragment {
     private Paint mPaint;
     View root;
     private LineChart mChart;
+    ArrayList<Entry> yValues;
+    Date startTime;
+    LineDataSet set1;
+    ArrayList<ILineDataSet> dataSets;
+    LineData data;
+    int dataSize = 1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -76,22 +83,31 @@ public class TouchFragment extends Fragment {
             LocalBroadcastManager.getInstance(act).registerReceiver(maReiver, new IntentFilter("MainActivity"));
         }
         mChart = (LineChart) root.findViewById(R.id.chart);
-        ArrayList<Entry> yValues = new ArrayList<>();
-        yValues.add(new Entry(0, 60f));
-        yValues.add(new Entry(1, 70f));
-        yValues.add(new Entry(2, 30f));
-        yValues.add(new Entry(3, 40f));
-
-        LineDataSet set1 = new LineDataSet(yValues, "Data set 1");
+//        ArrayList<Entry> yValues;
+        yValues = new ArrayList<>();
+        yValues.add(new Entry(0, 0));
+//        LineDataSet set1;
+        set1 = new LineDataSet(yValues, "Delay");
         set1.setFillAlpha(110);
-
-        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
+//        ArrayList<ILineDataSet> dataSets;
+        dataSets = new ArrayList<>();
         dataSets.add(set1);
+//        LineData data;
+        data = new LineData(dataSets);
 
-        LineData data = new LineData(dataSets);
+        mChart.getAxisRight().setDrawGridLines(false);
+        mChart.getAxisLeft().setDrawGridLines(false);
+        mChart.getXAxis().setDrawGridLines(false);
+        mChart.getXAxis().setEnabled(false);
 
+        mChart.setDrawBorders(false);
+        Description description = new Description();
+        description.setText("");
+
+        mChart.setDescription(description);
         mChart.setData(data);
 
+        startTime = new Date(System.currentTimeMillis());
         return root;
     }
 
@@ -106,6 +122,7 @@ public class TouchFragment extends Fragment {
     };
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
         @Override
         public void onReceive(Context context, Intent i) {
             if (i.hasExtra("TouchStart")) {
@@ -121,22 +138,38 @@ public class TouchFragment extends Fragment {
                         i.getFloatExtra("y", 0));
             }
             if (i.hasExtra("ScreenSize")) {
-
             }
             if (i.hasExtra("CleanCanvas")) {
-
             }
             if (i.hasExtra("TouchUp")) {
                 dvPairedApp.remoteTouchEvent("TouchUp", 0, 0);
             }
             if (i.hasExtra("TouchTolerance")) {
-
-            } else {
-                // Do something else
+            } else {               // Do something else
             }
 
         }
     };
+
+    private void addDataToChart(Date thisTime, long difference) {
+
+        float y = (float) difference;
+
+        yValues.add(new Entry(dataSize, y));
+        dataSize++;
+        if (yValues.size() > 30) {
+            yValues.remove(0);
+        }
+        Thread t = new Thread() {
+            public void run() {
+                set1.notifyDataSetChanged();
+                data.notifyDataChanged();
+                mChart.notifyDataSetChanged();
+                mChart.invalidate();
+            }
+        };
+        t.start();
+    }
 
     private void countTime(float x, float y) {
         Float z = x + y;
@@ -148,11 +181,10 @@ public class TouchFragment extends Fragment {
                 long seconds = (thisTime.getTime() - previousDate.getTime());
                 ((MainActivity) act).operation.remove(z.hashCode());
                 Log.d(TAG, "onReceive: ~~difference " + seconds);
+                addDataToChart(thisTime, seconds);
             } catch (Exception e) {
 
             }
-
-
         }
     }
 
