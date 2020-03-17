@@ -23,6 +23,12 @@ public class Network {
         kryo.register(TouchUp.class);
         kryo.register(CleanCanvas.class);
         kryo.register(ScreenSize.class);
+        kryo.register(Request.class);
+        kryo.register(Speed.class);
+    }
+    static public class Speed {
+        public float download;
+        public float upload;
     }
     static public class Pair{
         public String tokenPairSeeker;
@@ -36,10 +42,16 @@ public class Network {
     }
 
     static public class Register {
+        public boolean mainClient;
         public String userName;
         public String systemName;
         public String token;
     }
+    static public class Request{
+        public boolean registredUsers;
+        public boolean internetSpeed;
+    }
+
     static public class RegisteredUsers {
         public ArrayList<Register> users;
     }

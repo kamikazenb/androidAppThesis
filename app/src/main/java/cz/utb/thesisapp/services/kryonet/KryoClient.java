@@ -8,6 +8,8 @@ import com.esotericsoftware.kryonet.Listener;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 
 import cz.utb.thesisapp.services.Broadcast;
@@ -29,7 +31,7 @@ public class KryoClient {
         this.broadcast = broadcast;
     }
 
-    private void addClients(final String ip, final MyClient client, final String userName) {
+    private void addClients(final String ip, final MyClient client, final String userName, final boolean mainClient) {
         client.start();
         Network.register(client);
         client.klientName = "AndoidClient" + String.valueOf(android.os.Process.myPid());
@@ -38,6 +40,8 @@ public class KryoClient {
         client.addListener(new Listener.ThreadedListener(new Listener() {
             public void connected(Connection connection) {
                 Network.Register register = new Network.Register();
+                client.mainClient = mainClient;
+                register.mainClient = client.mainClient;
                 register.userName = userName;
                 register.systemName = userName.trim() + String.valueOf(android.os.Process.myPid());
                 register.token = client.token;
@@ -45,18 +49,22 @@ public class KryoClient {
             }
 
             public void disconnected(Connection connection) {
+                Log.d(TAG, "disconnected: ~~mainClient "+client.mainClient);
                 setClientsConnected(false);
             }
 
             public void received(Connection connection, Object object) {
 
                 if (object instanceof Network.Info) {
+                    Log.d(TAG, "received: ~~  if (object instanceof Network.Pair) {");
                     NetworkInfo(connection, object, client);
                 }
                 if (object instanceof Network.Pair) {
+                    Log.d(TAG, "received: ~~  if (object instanceof Network.Pair) {");
                     NetworkPair(connection, object, client);
                 }
                 if (object instanceof Network.RegisteredUsers) {
+                    Log.d(TAG, "received: ~~if (object instanceof Network.RegisteredUsers) {");
                     NetworkRegisteredUsers(connection, object, client);
                 }
                 if (object instanceof Network.TouchStart) {
@@ -79,9 +87,16 @@ public class KryoClient {
                     broadcast.sendTouchBoolean("TouchUp",
                             ((Network.TouchUp) object).touchUp);
                 }
-                if (object instanceof Network.TouchTolerance) {
+                if (object instanceof Network.TouchTolerance) { 
                     broadcast.sendTouchFloat("TouchTolerance",
                             ((Network.TouchTolerance) object).TOUCH_TOLERANCE);
+                }
+                if (object instanceof Network.Speed) {
+                    Log.d(TAG, "received: ~~   if (object instanceof Network.Speed) {");
+                    if(client.mainClient){
+                        float download = ((Network.Speed) object).download;
+                        float upload = ((Network.Speed) object).upload;
+                    }
                 }
             }
         }));
@@ -103,23 +118,37 @@ public class KryoClient {
     }
 
     private void NetworkRegisteredUsers(Connection connection, Object object, MyClient client) {
+
         Log.d(TAG, "received: ~~RegisteredUsers " + client.token);
-        Network.RegisteredUsers registeredUsers = (Network.RegisteredUsers) object;
-        for (int i = 0; i < ((Network.RegisteredUsers) object).users.size(); i++) {
-            Network.Register reg = ((Network.RegisteredUsers) object).users.get(i);
-            usersHashmap.put(reg.token, reg);
-        }
-        //      userName   token
-        HashMap<String, String> usersMap = new HashMap<>();
-        for (int i = 0; i < registeredUsers.users.size(); i++) {
-            if (!registeredUsers.users.get(i).token.equals(client.token)) {
-                usersMap.put(registeredUsers.users.get(i).token,
-                        registeredUsers.users.get(i).userName);
+        if (client.mainClient) {
+            Network.RegisteredUsers registeredUsers = (Network.RegisteredUsers) object;
+            usersHashmap.clear();
+            for (int i = 0; i < registeredUsers.users.size(); i++) {
+                if (registeredUsers.users.get(i).mainClient) {
+                    Network.Register reg = registeredUsers.users.get(i);
+                    usersHashmap.put(reg.token, reg);
+                }
+                if (((Network.RegisteredUsers) object).users.get(i).token.equals(clientReceiver.token)) {
+                    Network.Register reg = registeredUsers.users.get(i);
+                    usersHashmap.put(reg.token, reg);
+                }
+            }
+            //      userName   token
+            HashMap<String, String> usersMap = new HashMap<>();
+
+            for (Object value : usersHashmap.values()) {
+                Network.Register a = (Network.Register) value;
+                if (a.token.equals(clientSenderReceiver.token)) {
+                    continue;
+                }
+                usersMap.put(a.token, a.userName);
+            }
+
+            if (registeredUsers.users.size() > 0) {
+                broadcast.sendServiceHashMap("kryo", "users", usersMap);
             }
         }
-        if (registeredUsers.users.size() > 0) {
-            broadcast.sendServiceHashMap("kryo", "users", usersMap);
-        }
+
     }
 
     private void NetworkInfo(Connection connection, Object object, MyClient client) {
@@ -214,6 +243,19 @@ public class KryoClient {
         t.start();
     }
 
+    public void sendRequest(boolean speed, boolean registeredUsers) {
+        Network.Request request = new Network.Request();
+        request.internetSpeed = speed;
+        request.registredUsers = registeredUsers;
+        final Network.Request sendRequest = request;
+        Thread t = new Thread() {
+            public void run() {
+                clientSenderReceiver.sendTCP(sendRequest);
+            }
+        };
+        t.start();
+    }
+
     public void unPair() {
         Network.Pair pair = new Network.Pair();
         pair.tokenPairRespondent = clientSenderReceiver.token;
@@ -255,9 +297,9 @@ public class KryoClient {
 
     public void newClients(String ip, String userName) {
         clientSenderReceiver = new MyClient();
-        addClients(ip, clientSenderReceiver, userName);
+        addClients(ip, clientSenderReceiver, userName, true);
         clientReceiver = new MyClient();
-        addClients(ip, clientReceiver, userName);
+        addClients(ip, clientReceiver, userName, false);
     }
 
     public void stopClients() {

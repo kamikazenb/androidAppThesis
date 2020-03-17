@@ -13,10 +13,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.widget.ExpandableListAdapter;
 import android.widget.Toast;
-
-import cz.utb.thesisapp.services.*;
 
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -42,7 +39,6 @@ import java.util.List;
 
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.ui.home.HomeFragment;
-import cz.utb.thesisapp.ui.slideshow.SlideshowFragment;
 import cz.utb.thesisapp.ui.touch.TouchFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -264,21 +260,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive: ~~start");
             if (intent.hasExtra("acceptPair")) {
                 HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("acceptPair");
                 showAlertDialog("Do you accept sync with: \n \n" + hashMap.values().toArray()[0].toString(),
                         hashMap.keySet().toArray()[0].toString(), "kryo");
             }
+
             if (intent.hasExtra("userInfo")) {
                 Log.d(TAG, "onReceive: ~~in if" + intent.getExtras().getString("userInfo"));
-
                 Toast.makeText(getApplicationContext(), intent.getExtras().getString("userInfo"), Toast.LENGTH_SHORT).show();
             }
-
         }
     };
-
+    /*
+    public static class Receiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String data = intent.getStringExtra("data");
+            Log.d(TAG, "onReceive: ~~" + data);
+        }
+    }
+    */
     public void sendTouchStart(float x, float y) {
         if (ismBound()) {
             if (mService.kryoClient.isClientsConnected()) {
@@ -307,6 +309,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (ismBound()) {
             if (!mService.kryoClient.isClientsConnected()) {
                 mService.kryoClient.newClients(ip, userName);
+            }
+        }
+    }
+
+    public void sendRequest(boolean speed, boolean registeredUsers) {
+        if (ismBound()) {
+            if (mService.kryoClient.isClientsConnected()) {
+                mService.kryoClient.sendRequest(speed, registeredUsers);
             }
         }
     }
@@ -351,21 +361,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         bindService(i, connection, Context.BIND_AUTO_CREATE);
     }
 
+    public void startDownloadTest(){
+        if (ismBound()) {
+            mService.speedTest.startDownload();
+        }
+    }
+
+
+
     @Override
     protected void onStart() {
         super.onStart();
         startService();
         Log.d(TAG, "onStart: ~~");
-    }
-
-
-    public static class Receiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String data = intent.getStringExtra("data");
-            Log.d(TAG, "onReceive: ~~" + data);
-        }
-
     }
 
     @Override

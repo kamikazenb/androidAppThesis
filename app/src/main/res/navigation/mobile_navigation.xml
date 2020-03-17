@@ -28,7 +28,7 @@
 
     <fragment
         android:id="@+id/nav_slideshow"
-        android:name="cz.utb.thesisapp.ui.slideshow.SlideshowFragment"
+        android:name="cz.utb.thesisapp.ui.info.InfoFragment"
         android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/fragment_info" />
 </navigation>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.info.InfoFragment">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/FIguideLeft1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp"
+                app:layout_constraintGuide_percent="0.3" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/FIguideLeft2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.33" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/FIguidelineRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.85" />
+
+            <TextView
+                android:id="@+id/tvFI_0"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:gravity="center"
+                android:paddingVertical="20dp"
+                android:text="Internet speed"
+                app:layout_constraintBottom_toBottomOf="@id/tvFI_internetSpeedUpload"
+                app:layout_constraintEnd_toEndOf="@id/FIguideLeft1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvFI_internetSpeedDownload"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_file_download_green_24dp"
+                android:paddingVertical="10dp"
+                app:layout_constraintEnd_toEndOf="@id/FIguidelineRight"
+                app:layout_constraintStart_toStartOf="@id/FIguideLeft2"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <ProgressBar
+                android:indeterminateTint="@color/colorPrimary"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:id="@+id/progressBarFI_internetSpeed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="@id/FIguidelineRight"
+                app:layout_constraintStart_toStartOf="@id/FIguideLeft2"
+                app:layout_constraintTop_toBottomOf="@+id/tvFI_internetSpeedDownload" />
+            <TextView
+                android:id="@+id/tvFI_internetSpeedUpload"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_file_upload_blue_24dp"
+                android:paddingVertical="10dp"
+                app:layout_constraintEnd_toEndOf="@id/FIguidelineRight"
+                app:layout_constraintStart_toStartOf="@id/FIguideLeft2"
+               app:layout_constraintTop_toBottomOf="@+id/progressBarFI_internetSpeed"
+
+               />
+
+            <ImageButton
+                android:id="@+id/ibFI_speedRequest"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@null"
+                android:src="@drawable/ic_refresh_yellow_24dp"
+                app:layout_constraintBottom_toBottomOf="@+id/tvFI_internetSpeedUpload"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/FIguidelineRight"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

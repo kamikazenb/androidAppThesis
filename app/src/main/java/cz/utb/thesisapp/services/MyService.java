@@ -20,6 +20,7 @@ public class MyService extends Service {
     private final Random mGenerator = new Random();
     public Broadcast broadcast = new Broadcast(this);
     public KryoClient kryoClient = new KryoClient(broadcast);
+    public SpeedTest speedTest = new SpeedTest(broadcast);
 
     @Override
     public IBinder onBind(Intent intent) {
