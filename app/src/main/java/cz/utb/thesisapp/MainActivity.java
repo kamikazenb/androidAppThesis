@@ -34,7 +34,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import cz.utb.thesisapp.services.MyService;
@@ -49,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     boolean mBound = false;
     Context context;
     String currentlyShownTag;
+    public LinkedHashMap<Integer, Date> operation = new LinkedHashMap<>();
+    public ArrayList<Date> difference = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,14 +95,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View view) {
                 mService.broadcast.sendMainActivity("refresh", true);
-                ((FloatingActionMenu)findViewById(R.id.floatingActionMenu)).close(true);
+                ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
         });
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabEdit)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mService.broadcast.sendMainActivity("edit", true);
-                ((FloatingActionMenu)findViewById(R.id.floatingActionMenu)).close(true);
+                ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
         });
         Log.d(TAG, "onCreate: ~~");
@@ -272,6 +277,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     };
+
     /*
     public static class Receiver extends BroadcastReceiver {
         @Override
@@ -282,16 +288,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
     */
     public void sendTouchStart(float x, float y) {
+
         if (ismBound()) {
             if (mService.kryoClient.isClientsConnected()) {
+                addTimeStamp(x, y);
                 mService.kryoClient.sendTouchStart(x, y);
             }
         }
     }
 
+    public void addTimeStamp(float x, float y) {
+        Float z = x + y;
+        operation.put(z.hashCode(), new Date(System.currentTimeMillis()));
+    }
+
     public void sendTouchMove(float x, float y) {
+
         if (ismBound()) {
             if (mService.kryoClient.isClientsConnected()) {
+                addTimeStamp(x, y);
                 mService.kryoClient.sendTouchMove(x, y);
             }
         }
@@ -361,13 +376,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         bindService(i, connection, Context.BIND_AUTO_CREATE);
     }
 
-    public void startDownloadTest(){
+    public void startDownloadTest() {
         if (ismBound()) {
             mService.speedTest.startDownload();
         }
     }
-
-
 
     @Override
     protected void onStart() {

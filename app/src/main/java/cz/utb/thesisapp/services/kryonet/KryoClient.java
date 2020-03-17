@@ -49,7 +49,7 @@ public class KryoClient {
             }
 
             public void disconnected(Connection connection) {
-                Log.d(TAG, "disconnected: ~~mainClient "+client.mainClient);
+                Log.d(TAG, "disconnected: ~~mainClient " + client.mainClient);
                 setClientsConnected(false);
             }
 
@@ -87,13 +87,13 @@ public class KryoClient {
                     broadcast.sendTouchBoolean("TouchUp",
                             ((Network.TouchUp) object).touchUp);
                 }
-                if (object instanceof Network.TouchTolerance) { 
+                if (object instanceof Network.TouchTolerance) {
                     broadcast.sendTouchFloat("TouchTolerance",
                             ((Network.TouchTolerance) object).TOUCH_TOLERANCE);
                 }
                 if (object instanceof Network.Speed) {
                     Log.d(TAG, "received: ~~   if (object instanceof Network.Speed) {");
-                    if(client.mainClient){
+                    if (client.mainClient) {
                         float download = ((Network.Speed) object).download;
                         float upload = ((Network.Speed) object).upload;
                     }

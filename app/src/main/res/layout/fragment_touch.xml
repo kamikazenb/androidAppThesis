@@ -39,16 +39,24 @@
         app:layout_constraintTop_toBottomOf="@+id/guideLineMid"
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="46dp" />
-    <TextView
-        android:id="@+id/tvTouchInfo"
-        android:text="info"
-        android:gravity="left"
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/chart"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/guideLineTop"/>
+        app:layout_constraintBottom_toBottomOf="@id/guideLineTop"/>/>
+<!--    <TextView-->
+<!--        android:id="@+id/tvTouchInfo"-->
+<!--        android:text="info"-->
+<!--        android:gravity="left"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="@id/guideLineTop"/>-->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

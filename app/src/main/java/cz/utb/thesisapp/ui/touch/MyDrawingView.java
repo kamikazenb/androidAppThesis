@@ -10,7 +10,7 @@ import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
-import android.util.Log;
+
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -97,7 +97,7 @@ public class MyDrawingView extends View {
         this.y = y;
         canvas.drawPath(path, paint);
 
-        Log.d(TAG, "touchStart: ~~x" + x);
+
     }
 
     private void touchMove(float x, float y) {
@@ -107,10 +107,10 @@ public class MyDrawingView extends View {
             path.quadTo(this.x, this.y, (x + this.x) / 2, (y + this.y) / 2);
             this.x = x;
             this.y = y;
-            Log.d(TAG, "touchMoveOffTolerance: ~~x" + x);
+
         }
         canvas.drawPath(path, paint);
-//        Log.d(TAG, "touchMove: ~~x"+x);
+//
     }
 
     private void touchUp() {
@@ -122,7 +122,7 @@ public class MyDrawingView extends View {
         } else {
             paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
-        Log.d(TAG, "touchUp: ~~x" + x);
+
     }
 
     public void remoteTouchEvent(String action, float x, float y) {
@@ -266,7 +266,7 @@ public class MyDrawingView extends View {
     public boolean saveImage(String filePath, String filename, Bitmap.CompressFormat format,
                              int quality) {
         if (quality > 100) {
-            Log.d("saveImage", "quality cannot be greater that 100");
+
             return false;
         }
         File file;

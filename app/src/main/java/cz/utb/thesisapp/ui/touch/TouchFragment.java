@@ -22,7 +22,14 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.github.clans.fab.FloatingActionButton;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import cz.utb.thesisapp.MainActivity;
@@ -36,6 +43,7 @@ public class TouchFragment extends Fragment {
     MyDrawingView dvPairedApp;
     private Paint mPaint;
     View root;
+    private LineChart mChart;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -53,7 +61,7 @@ public class TouchFragment extends Fragment {
         Activity act = getActivity();
         if (act instanceof MainActivity) {
             dvThisApp = (MyDrawingView) root.findViewById(R.id.scratch_pad);
-            dvThisApp.setTextView(((TextView) root.findViewById(R.id.tvTouchInfo)));
+//            dvThisApp.setTextView(((TextView) root.findViewById(R.id.tvTouchInfo)));
             dvThisApp.act = act;
         }
 
@@ -67,9 +75,26 @@ public class TouchFragment extends Fragment {
             LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("touch"));
             LocalBroadcastManager.getInstance(act).registerReceiver(maReiver, new IntentFilter("MainActivity"));
         }
+        mChart = (LineChart) root.findViewById(R.id.chart);
+        ArrayList<Entry> yValues = new ArrayList<>();
+        yValues.add(new Entry(0, 60f));
+        yValues.add(new Entry(1, 70f));
+        yValues.add(new Entry(2, 30f));
+        yValues.add(new Entry(3, 40f));
+
+        LineDataSet set1 = new LineDataSet(yValues, "Data set 1");
+        set1.setFillAlpha(110);
+
+        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
+        dataSets.add(set1);
+
+        LineData data = new LineData(dataSets);
+
+        mChart.setData(data);
 
         return root;
     }
+
     private final BroadcastReceiver maReiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent i) {
@@ -84,11 +109,13 @@ public class TouchFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent i) {
             if (i.hasExtra("TouchStart")) {
+                countTime(i.getFloatExtra("x", 0), i.getFloatExtra("y", 0));
                 dvPairedApp.remoteTouchEvent("TouchStart",
                         i.getFloatExtra("x", 0),
                         i.getFloatExtra("y", 0));
             }
             if (i.hasExtra("TouchMove")) {
+                countTime(i.getFloatExtra("x", 0), i.getFloatExtra("y", 0));
                 dvPairedApp.remoteTouchEvent("TouchMove",
                         i.getFloatExtra("x", 0),
                         i.getFloatExtra("y", 0));
@@ -110,6 +137,24 @@ public class TouchFragment extends Fragment {
 
         }
     };
+
+    private void countTime(float x, float y) {
+        Float z = x + y;
+        Activity act = getActivity();
+        if (act instanceof MainActivity) {
+            try {
+                Date previousDate = ((MainActivity) act).operation.get(z.hashCode());
+                Date thisTime = new Date(System.currentTimeMillis());
+                long seconds = (thisTime.getTime() - previousDate.getTime());
+                ((MainActivity) act).operation.remove(z.hashCode());
+                Log.d(TAG, "onReceive: ~~difference " + seconds);
+            } catch (Exception e) {
+
+            }
+
+
+        }
+    }
 
     @Override
     public void onResume() {
