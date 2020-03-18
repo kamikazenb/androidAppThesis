@@ -45,12 +45,12 @@ public class TouchFragment extends Fragment {
     private Paint mPaint;
     View root;
     private LineChart mChart;
-    ArrayList<Entry> yValues;
+    volatile ArrayList<Entry> yValues;
     Date startTime;
-    LineDataSet set1;
-    ArrayList<ILineDataSet> dataSets;
-    LineData data;
-    int dataSize = 1;
+    volatile LineDataSet set1;
+    volatile ArrayList<ILineDataSet> dataSets;
+    volatile LineData data;
+    volatile int dataSize = 1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -99,7 +99,7 @@ public class TouchFragment extends Fragment {
         mChart.getAxisLeft().setDrawGridLines(false);
         mChart.getXAxis().setDrawGridLines(false);
         mChart.getXAxis().setEnabled(false);
-
+        mChart.getDescription().setEnabled(false);
         mChart.setDrawBorders(false);
         Description description = new Description();
         description.setText("");
@@ -152,23 +152,24 @@ public class TouchFragment extends Fragment {
     };
 
     private void addDataToChart(Date thisTime, long difference) {
-
-        float y = (float) difference;
-
+        final float y = (float) difference;
+        Thread t = new Thread() {
+            public void run() {
+                update(y);
+            }
+        };
+        t.start();
+    }
+    private  synchronized void update(float y){
         yValues.add(new Entry(dataSize, y));
         dataSize++;
         if (yValues.size() > 30) {
             yValues.remove(0);
         }
-        Thread t = new Thread() {
-            public void run() {
-                set1.notifyDataSetChanged();
-                data.notifyDataChanged();
-                mChart.notifyDataSetChanged();
-                mChart.invalidate();
-            }
-        };
-        t.start();
+        set1.notifyDataSetChanged();
+        data.notifyDataChanged();
+        mChart.notifyDataSetChanged();
+        mChart.invalidate();
     }
 
     private void countTime(float x, float y) {
