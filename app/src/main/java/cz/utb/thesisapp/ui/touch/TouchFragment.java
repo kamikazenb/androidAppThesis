@@ -12,8 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -21,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.github.clans.fab.FloatingActionButton;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.data.Entry;
@@ -30,9 +27,12 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import cz.utb.thesisapp.Event;
 import cz.utb.thesisapp.MainActivity;
 import cz.utb.thesisapp.R;
 
@@ -45,12 +45,14 @@ public class TouchFragment extends Fragment {
     private Paint mPaint;
     View root;
     private LineChart mChart;
-    volatile ArrayList<Entry> yValues;
+    List yValues;
+    //    volatile ArrayList<Entry> yValues;
     Date startTime;
     volatile LineDataSet set1;
     volatile ArrayList<ILineDataSet> dataSets;
     volatile LineData data;
     volatile int dataSize = 1;
+    private Thread thread;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -82,13 +84,15 @@ public class TouchFragment extends Fragment {
             LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("touch"));
             LocalBroadcastManager.getInstance(act).registerReceiver(maReiver, new IntentFilter("MainActivity"));
         }
-        mChart = (LineChart) root.findViewById(R.id.chart);
+        mChart = (LineChart) root.findViewById(R.id.chartFT);
 //        ArrayList<Entry> yValues;
-        yValues = new ArrayList<>();
+        yValues = Collections.synchronizedList(new ArrayList<Entry>());
         yValues.add(new Entry(0, 0));
 //        LineDataSet set1;
         set1 = new LineDataSet(yValues, "Delay");
         set1.setFillAlpha(110);
+        set1.setColor(Color.RED);
+        set1.setCircleColor(Color.RED);
 //        ArrayList<ILineDataSet> dataSets;
         dataSets = new ArrayList<>();
         dataSets.add(set1);
@@ -108,7 +112,83 @@ public class TouchFragment extends Fragment {
         mChart.setData(data);
 
         startTime = new Date(System.currentTimeMillis());
+
         return root;
+    }
+
+    public void startPlot() {
+        if (thread != null) {
+            thread.interrupt();
+        }
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        plot();
+                        Thread.sleep(150);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        thread.start();
+    }
+
+    private void addDataToChart(long difference) {
+        final float y = (float) difference;
+        update(y);
+    }
+
+    private synchronized void plot() {
+        set1.notifyDataSetChanged();
+        data.notifyDataChanged();
+        mChart.notifyDataSetChanged();
+        mChart.invalidate();
+    }
+
+    private synchronized void update(float y) {
+        synchronized (yValues) {
+            yValues.add(new Entry(dataSize, y));
+            dataSize++;
+            if (yValues.size() > 30) {
+                yValues.remove(0);
+            }
+        }
+        Activity act = getActivity();
+        if (act instanceof MainActivity) {
+            synchronized (((MainActivity) act).delays) {
+                Entry a = new Entry(getTime(), y);
+                ((MainActivity) act).delays.add(a);
+            }
+        }
+    }
+
+    private float getTime() {
+        long millis = System.currentTimeMillis();
+        long millisWithoutDays = millis - TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(millis));
+        String sb1 = Long.toString(millisWithoutDays);
+        sb1 = sb1.substring(1);
+        return Float.valueOf(sb1);
+    }
+
+    private void countTime(float x, float y) {
+        Float z = x + y;
+        Activity act = getActivity();
+        if (act instanceof MainActivity) {
+            try {
+                Date previousDate = ((MainActivity) act).operation.get(z.hashCode());
+                Date thisTime = new Date(System.currentTimeMillis());
+                long seconds = (thisTime.getTime() - previousDate.getTime());
+                ((MainActivity) act).operation.remove(z.hashCode());
+                Log.d(TAG, "onReceive: ~~difference " + seconds);
+                addDataToChart(seconds);
+            } catch (Exception e) {
+
+            }
+        }
     }
 
     private final BroadcastReceiver maReiver = new BroadcastReceiver() {
@@ -151,58 +231,27 @@ public class TouchFragment extends Fragment {
         }
     };
 
-    private void addDataToChart(Date thisTime, long difference) {
-        final float y = (float) difference;
-        Thread t = new Thread() {
-            public void run() {
-                update(y);
-            }
-        };
-        t.start();
-    }
-    private  synchronized void update(float y){
-        yValues.add(new Entry(dataSize, y));
-        dataSize++;
-        if (yValues.size() > 30) {
-            yValues.remove(0);
-        }
-        set1.notifyDataSetChanged();
-        data.notifyDataChanged();
-        mChart.notifyDataSetChanged();
-        mChart.invalidate();
-    }
-
-    private void countTime(float x, float y) {
-        Float z = x + y;
-        Activity act = getActivity();
-        if (act instanceof MainActivity) {
-            try {
-                Date previousDate = ((MainActivity) act).operation.get(z.hashCode());
-                Date thisTime = new Date(System.currentTimeMillis());
-                long seconds = (thisTime.getTime() - previousDate.getTime());
-                ((MainActivity) act).operation.remove(z.hashCode());
-                Log.d(TAG, "onReceive: ~~difference " + seconds);
-                addDataToChart(thisTime, seconds);
-            } catch (Exception e) {
-
-            }
-        }
-    }
-
     @Override
     public void onResume() {
+        startPlot();
         super.onResume();
         Log.d(TAG, "onResume: ~~");
     }
 
     @Override
     public void onPause() {
+        if (thread != null) {
+            thread.interrupt();
+        }
         super.onPause();
         Log.d(TAG, "onPause: ~~");
     }
 
     @Override
     public void onStop() {
+        if (thread != null) {
+            thread.interrupt();
+        }
         super.onStop();
         Log.d(TAG, "onStop: ~~");
     }

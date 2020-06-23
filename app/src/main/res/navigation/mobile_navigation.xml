@@ -6,7 +6,6 @@
     app:startDestination="@+id/nav_home">
 
     <fragment
-
         app:launchSingleTop="true"
         android:id="@+id/nav_home"
         android:name="cz.utb.thesisapp.ui.home.HomeFragment"

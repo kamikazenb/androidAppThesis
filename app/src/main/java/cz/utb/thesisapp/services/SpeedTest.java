@@ -52,7 +52,7 @@ public class SpeedTest {
                     onProgressTask(percent, report);
                 }
             });
-            speedTestSocket.startDownload("ftp://speedtest.tele2.net/5MB.zip");
+            speedTestSocket.startDownload("ftp://speedtest.tele2.net/1MB.zip");
             return true;
         }
     }
@@ -90,18 +90,18 @@ public class SpeedTest {
 
     public void onCompleteTask(SpeedTestReport report) {
         BigDecimal divisor = new BigDecimal("1000000");
-        String speed = report.getTransferRateOctet().divide(divisor).round(new MathContext(3)) + " MB/s  ";
-        broadcast.sendInfoFragmentSpeed(report.getSpeedTestMode().name(), speed, 100);
+        float speed = report.getTransferRateOctet().divide(divisor).round(new MathContext(3)).floatValue();
+        broadcast.sendInfoFragmentSpeed(report.getSpeedTestMode().name(), speed, 101);
     }
 
     public void onProgressTask(float percent, SpeedTestReport report) {
         BigDecimal divisor = new BigDecimal("1000000");
-        String speed = report.getTransferRateOctet().divide(divisor).round(new MathContext(3)) + " MB/s  ";
+        float speed = report.getTransferRateOctet().divide(divisor).round(new MathContext(3)).floatValue();
         broadcast.sendInfoFragmentSpeed(report.getSpeedTestMode().name(), speed, (int) percent);
     }
 
     public void onErrorTask(SpeedTestError speedTestError, String errorMessage) {
-        broadcast.sendInfoFragmentSpeed("UPLOAD", "Error", 100);
+        broadcast.sendInfoFragmentSpeed("UPLOAD", 0, 100);
     }
 
 }

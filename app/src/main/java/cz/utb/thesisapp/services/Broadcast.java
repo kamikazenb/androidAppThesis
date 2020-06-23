@@ -61,7 +61,7 @@ public class Broadcast {
         i.putExtra(command, value);
         LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
     }
-    public void sendInfoFragmentSpeed(String uploadOrDownload, String speed, int progress){
+    public void sendInfoFragmentSpeed(String uploadOrDownload, float speed, int progress){
         Intent i = new Intent("info");
         i.putExtra(uploadOrDownload, speed);
         i.putExtra("progress", progress);

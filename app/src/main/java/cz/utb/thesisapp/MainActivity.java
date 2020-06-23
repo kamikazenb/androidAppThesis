@@ -16,8 +16,11 @@ import android.view.Menu;
 import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionMenu;
+import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.rethinkdb.RethinkDB;
+import com.rethinkdb.net.Connection;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -27,6 +30,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
+import androidx.navigation.NavGraph;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -35,6 +39,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -53,12 +58,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Context context;
     String currentlyShownTag;
     public LinkedHashMap<Integer, Date> operation = new LinkedHashMap<>();
-    public ArrayList<Date> difference = new ArrayList<>();
+    public List delays = Collections.synchronizedList(new ArrayList<Entry>());
+    public List download = Collections.synchronizedList(new ArrayList<Entry>());
+    public List upload = Collections.synchronizedList(new ArrayList<Entry>());
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
         setContentView(R.layout.activity_main);
+        fragments = getSupportFragmentManager().getFragments();
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -72,11 +82,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer = findViewById(R.id.drawer_layout);
         //konkretny panel s menu
         NavigationView navigationView = findViewById(R.id.nav_view);
-
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
+        Menu topLevelMenu = navigationView.getMenu();
+//        mAppBarConfiguration = new AppBarConfiguration.Builder(
+//                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+//                .setDrawerLayout(drawer)
+//                .build();
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                topLevelMenu)
                 .setDrawerLayout(drawer)
                 .build();
         //content main
@@ -85,9 +99,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         //pripojenie click na presun
         NavigationUI.setupWithNavController(navigationView, navController);
+
 //        navigationView.setNavigationItemSelectedListener(this);
         currentlyShownTag = HomeFragment.class.getName();
-        Fragment home = getVisibleFragment();
+//        Fragment home = getVisibleFragment();
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("kryo"));
 
@@ -101,16 +116,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabEdit)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 mService.broadcast.sendMainActivity("edit", true);
                 ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
         });
+//        download.add(new Entry(5, 5));
+//        download.add(new Entry(10, 3));
+//        upload.add(new Entry(3, 7));
+//        upload.add(new Entry(7, 7));
+//        delays.add(new Entry(0,2));
+//        delays.add(new Entry(5000,2));
         Log.d(TAG, "onCreate: ~~");
+
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         Log.d(TAG, "onNavigationItemSelected: ~~" + menuItem);
+
      /*
         Fragment newFragment;
         android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -155,9 +179,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //        }
 
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
-//        for(Fragment fragment:fragments){
-//           String tag =  fragment.getTag();
-//        }
+        //        for(Fragment fragment:fragments){
+        //           String tag =  fragment.getTag();
+        //        }
         int id = menuItem.getItemId();
         menuItem.setChecked(true);
         setTitle(menuItem.getTitle());
