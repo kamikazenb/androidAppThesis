@@ -10,11 +10,8 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionMenu;
@@ -22,12 +19,8 @@ import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
@@ -44,13 +37,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
-import cz.utb.thesisapp.ui.touch.TouchFragment;
+import cz.utb.thesisapp.ui.info.InfoViewModel;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private AppBarConfiguration mAppBarConfiguration;
     private DrawerLayout drawer;
@@ -59,17 +53,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Context context;
     String currentlyShownTag;
     public LinkedHashMap<Integer, Date> operation = new LinkedHashMap<>();
-    public List delays = Collections.synchronizedList(new ArrayList<Entry>());
-    public List download = Collections.synchronizedList(new ArrayList<Entry>());
-    public List upload = Collections.synchronizedList(new ArrayList<Entry>());
     private HomeViewModel homeViewModel;
+    private InfoViewModel infoViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         homeViewModel =
                 ViewModelProviders.of(this).get(HomeViewModel.class);
-
+        infoViewModel =
+                ViewModelProviders.of(this).get(InfoViewModel.class);
         setContentView(R.layout.activity_main);
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -93,7 +86,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         currentlyShownTag = HomeFragment.class.getName();
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("kryo"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(homeReceiver, new IntentFilter("kryo"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter("info"));
 
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,117 +111,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        Log.d(TAG, "onNavigationItemSelected: ~~" + menuItem);
-
-     /*
-        Fragment newFragment;
-        android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        switch (position) {
-            case 0:
-                newFragment = new HomeFragment();
-                transaction.replace(R.id.nav_host_fragment, newFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-                break;
-
-            case 1:
-                newFragment = new TouchFragment();
-                transaction.replace(R.id.nav_host_fragment, newFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-                break;
-        }
-        //DrawerList.setItemChecked(position, true);
-        setTitle(ListTitles[position]);
-        DrawerLayout.closeDrawer(DrawerList);
-      */
-
-     /*
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        Fragment fragment = null;
-        for (Fragment currentFragment : fragments) {
-            switch (menuItem.getItemId()) {
-                case R.id.nav_home:
-                    Log.d(TAG, "onNavigationItemSelected: ~~  case R.id.nav_home:" + menuItem);
-                    if (!(currentFragment instanceof HomeFragment)) {
-                        Log.d(TAG, "onNavigationItemSelected: ~~  if (!(currentFragment instanceof HomeFragment))" + menuItem);
-                        drawer.closeDrawer(GravityCompat.START);
-                    }
-                    break;
-            }
-        }
-
-    */
-        //        if (menuItem.isChecked()) {
-        //            return false;
-        //        }
-
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        //        for(Fragment fragment:fragments){
-        //           String tag =  fragment.getTag();
-        //        }
-        int id = menuItem.getItemId();
-        menuItem.setChecked(true);
-        setTitle(menuItem.getTitle());
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-//        Fragment currentlyShown =  fragmentManager.findFragmentByTag(currentlyShownTag);
-        Fragment currentlyShown = fragmentManager.findFragmentById(menuItem.getItemId());
-        Fragment visibleFragment = getVisibleFragment();
-        String a = visibleFragment.getTag();
-        Fragment f = getSupportFragmentManager().findFragmentById(R.id.nav_home);
-        Fragment dest;
-        switch (id) {
-            case R.id.nav_home:
-                dest = fragmentManager.findFragmentByTag(HomeFragment.class.getName());
-                if (dest == null) {
-                    dest = new HomeFragment();
-                    currentlyShownTag = HomeFragment.class.getName();
-                    transaction.add(R.id.nav_host_fragment, dest, HomeFragment.class.getName());
-                }
-                break;
-            case R.id.nav_gallery:
-                dest = fragmentManager.findFragmentByTag(TouchFragment.class.getName());
-                if (dest == null) {
-                    dest = new TouchFragment();
-                    currentlyShownTag = TouchFragment.class.getName();
-                    transaction.add(R.id.nav_host_fragment, dest, TouchFragment.class.getName());
-                }
-                break;
-            default:
-                dest = fragmentManager.findFragmentByTag(HomeFragment.class.getName());
-                break;
-        }
-
-        if (currentlyShown != null) {
-            transaction.hide(currentlyShown);
-        }
-
-
-//        transaction.addToBackStack(null);
-        transaction.show(dest);
-        transaction.commit();
-        drawer.closeDrawer(GravityCompat.START);
-
-        return true;
-
-    }
-
-    public Fragment getVisibleFragment() {
-        FragmentManager fragmentManager = MainActivity.this.getSupportFragmentManager();
-        List<Fragment> fragments = fragmentManager.getFragments();
-        if (fragments != null) {
-            for (Fragment fragment : fragments) {
-                if (fragment != null && fragment.isVisible())
-                    return fragment;
-            }
-        }
-        return null;
-    }
 
     public boolean ismBound() {
         return mBound;
@@ -271,7 +154,43 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver infoReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra("DOWNLOAD")) {
+                Entry entry = new Entry(getTime(),
+                        (intent.getFloatExtra("DOWNLOAD", 0)) * 100);
+                infoViewModel.downloadAddEntry(entry);
+                if (intent.getIntExtra("progress", 0) < 101) {
+                    infoViewModel.setProgress(intent.getIntExtra("progress", 0));
+                    infoViewModel.setDownloadSpeedText(String.valueOf(intent.getFloatExtra("DOWNLOAD", 0)) + "MB/s");
+                }
+
+            }
+            if (intent.hasExtra("UPLOAD")) {
+                Entry entry = new Entry(getTime(),
+                        (intent.getFloatExtra("UPLOAD", 0)) * 100);
+                infoViewModel.uploadAddEntry(entry);
+                infoViewModel.setUploadSpeedText(String.valueOf(intent.getFloatExtra("UPLOAD", 0)) + "MB/s");
+                if (intent.getIntExtra("progress", 0) == 101) {
+                    infoViewModel.setProgress(0);
+                } else {
+                    infoViewModel.setProgress(intent.getIntExtra("progress", 0));
+                }
+            }
+        }
+    };
+
+    private float getTime() {
+        long millis = System.currentTimeMillis();
+        long millisWithoutDays = millis - TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(millis));
+        String sb1 = Long.toString(millisWithoutDays);
+        sb1 = sb1.substring(1);
+        return Float.valueOf(sb1)/1000;
+    }
+
+    private final BroadcastReceiver homeReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -322,15 +241,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     };
 
-    /*
-    public static class Receiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String data = intent.getStringExtra("data");
-            Log.d(TAG, "onReceive: ~~" + data);
-        }
-    }
-    */
+
     public void sendTouchStart(float x, float y) {
 
         if (ismBound()) {
@@ -445,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mBound = false;
         homeViewModel.setmBounded(mBound);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(homeReceiver);
     }
 
     /**

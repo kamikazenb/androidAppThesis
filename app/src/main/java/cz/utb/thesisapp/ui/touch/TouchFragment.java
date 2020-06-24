@@ -35,10 +35,11 @@ import java.util.concurrent.TimeUnit;
 import cz.utb.thesisapp.Event;
 import cz.utb.thesisapp.MainActivity;
 import cz.utb.thesisapp.R;
+import cz.utb.thesisapp.ui.info.InfoViewModel;
 
 public class TouchFragment extends Fragment {
     private static final String TAG = "GalleryFragment";
-
+    private InfoViewModel infoViewModel;
     private TouchViewModel touchViewModel;
     MyDrawingView dvThisApp;
     MyDrawingView dvPairedApp;
@@ -58,6 +59,12 @@ public class TouchFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         touchViewModel =
                 ViewModelProviders.of(this).get(TouchViewModel.class);
+        try {
+            infoViewModel =
+                    ViewModelProviders.of(getActivity()).get(InfoViewModel.class);
+        } catch (Exception e) {
+
+        }
         root = inflater.inflate(R.layout.fragment_touch, container, false);
 //        final TextView textView = root.findViewById(R.id.text_gallery);
 //        touchViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
@@ -159,9 +166,9 @@ public class TouchFragment extends Fragment {
         }
         Activity act = getActivity();
         if (act instanceof MainActivity) {
-            synchronized (((MainActivity) act).delays) {
+            synchronized (infoViewModel.getDelays()) {
                 Entry a = new Entry(getTime(), y);
-                ((MainActivity) act).delays.add(a);
+                infoViewModel.delayAddEntry(a);
             }
         }
     }
@@ -171,7 +178,7 @@ public class TouchFragment extends Fragment {
         long millisWithoutDays = millis - TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(millis));
         String sb1 = Long.toString(millisWithoutDays);
         sb1 = sb1.substring(1);
-        return Float.valueOf(sb1);
+        return Float.valueOf(sb1)/1000;
     }
 
     private void countTime(float x, float y) {

@@ -47,19 +47,19 @@ public class HomeFragment extends Fragment {
         try {
             homeViewModel =
                     ViewModelProviders.of(getActivity()).get(HomeViewModel.class);
-        }catch (Exception e){
-            
-        }   
-        
+        } catch (Exception e) {
+
+        }
+
         root = inflater.inflate(R.layout.fragment_home, container, false);
-        
+
         homeViewModel.getPairedName().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 ((TextView) root.findViewById(R.id.tvKryoPairName)).setText(s);
             }
         });
-        
+
         homeViewModel.getRequireRefresh().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
@@ -69,7 +69,7 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-        
+
         homeViewModel.getKryoConnected().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
@@ -90,14 +90,19 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-        
+
         homeViewModel.getUsers().observe(getViewLifecycleOwner(), new Observer<HashMap<String, String>>() {
             @Override
             public void onChanged(HashMap<String, String> stringStringHashMap) {
-                setDropdownMenu(stringStringHashMap);
+                if (stringStringHashMap != null) {
+                    setDropdownMenu(stringStringHashMap);
+                } else {
+                    ((Spinner) root.findViewById(R.id.spinner)).setClickable(false);
+                    ((Spinner) root.findViewById(R.id.spinner)).setAdapter(null);
+                }
             }
         });
-        
+
         Activity act = getActivity();
         if (act instanceof MainActivity) {
             sharedPreferences = PreferenceManager.getDefaultSharedPreferences(act);
@@ -135,15 +140,13 @@ public class HomeFragment extends Fragment {
                     if (unboxBool(homeViewModel.getmBounded())) {
                         ((MainActivity) act).stopKryo();
                     }
-                    ((Spinner) root.findViewById(R.id.spinner)).setClickable(false);
-                    ((Switch) root.findViewById(R.id.switchSynced)).setClickable(false);
-                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(false);
-                    Spinner spinnerDropdown = root.findViewById(R.id.spinner);
-                    spinnerDropdown.setAdapter(null);
+                    homeViewModel.setPaired(false);
+                    homeViewModel.setUsers(null);
+                    homeViewModel.setPairedname("");
                 }
             }
         });
-        
+
         ((Switch) root.findViewById(R.id.switchSynced)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
@@ -157,7 +160,7 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-
+        Log.d(TAG, "onCreateView: ~~");
         return root;
     }
 
@@ -191,7 +194,6 @@ public class HomeFragment extends Fragment {
                         }
                     }
                 }
-
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
 

@@ -52,7 +52,7 @@ public class SpeedTest {
                     onProgressTask(percent, report);
                 }
             });
-            speedTestSocket.startDownload("ftp://speedtest.tele2.net/1MB.zip");
+            speedTestSocket.startDownload("ftp://speedtest.tele2.net/3MB.zip", 1000);
             return true;
         }
     }
@@ -82,7 +82,7 @@ public class SpeedTest {
                 }
             });
 
-            speedTestSocket.startUpload("http://ipv4.ikoula.testdebit.info/", 2000000, 1000);
+            speedTestSocket.startUpload("http://ipv4.ikoula.testdebit.info/", 3000000, 1000);
 
             return true;
         }

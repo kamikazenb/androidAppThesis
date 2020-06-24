@@ -8,7 +8,9 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.media.Image;
 import android.os.Bundle;
+
 import com.github.mikephil.charting.data.Entry;
+
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -61,17 +63,39 @@ public class InfoFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        infoViewModel =
-                ViewModelProviders.of(this).get(InfoViewModel.class);
-        root = inflater.inflate(R.layout.fragment_info, container, false);
-//        final TextView textView = root.findViewById(R.id.text_slideshow);
-//        infoViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                textView.setText(s);
-//            }
-//        });
 
+        try {
+            infoViewModel =
+                    ViewModelProviders.of(getActivity()).get(InfoViewModel.class);
+        } catch (Exception e) {
+
+        }
+        root = inflater.inflate(R.layout.fragment_info, container, false);
+        infoViewModel.getProgress().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                ((ProgressBar) root.findViewById(R.id.progressBarFI_internetSpeed))
+                        .setProgress(integer);
+                if(integer == 0){
+                    ((ImageButton) root.findViewById(R.id.ibFI_speedRequest)).setEnabled(true);
+                }else {
+                    ((ImageButton) root.findViewById(R.id.ibFI_speedRequest)).setEnabled(false);
+                }
+
+            }
+        });
+        infoViewModel.getDownloadSpeedText().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                ((TextView) root.findViewById(R.id.tvFI_internetSpeedDownload)).setText(s);
+            }
+        });
+        infoViewModel.getUploadSpeedText().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                ((TextView) root.findViewById(R.id.tvFI_internetSpeedUpload)).setText(s);
+            }
+        });
         ImageButton ib = root.findViewById(R.id.ibFI_speedRequest);
         ib.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,20 +108,16 @@ public class InfoFragment extends Fragment {
                     ((ImageButton) root.findViewById(R.id.ibFI_speedRequest)).setEnabled(false);
                     ((TextView) root.findViewById(R.id.tvFI_internetSpeedDownload)).setText("");
                     ((TextView) root.findViewById(R.id.tvFI_internetSpeedUpload)).setText("");
-
                 }
             }
         });
         Activity act = getActivity();
-        if (act instanceof MainActivity) {
-            LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("info"));
-        }
 
         mChart = (LineChart) root.findViewById(R.id.chartFI);
         if (act instanceof MainActivity) {
-            setDelays = new LineDataSet(((MainActivity) act).delays, "Delay");
-            setDownloads = new LineDataSet(((MainActivity) act).download, "Download MB/s *100");
-            setUploads = new LineDataSet(((MainActivity) act).upload, "Upload MB/s *100");
+            setDelays = infoViewModel.getDelay();
+            setDownloads = infoViewModel.getDl();
+            setUploads = infoViewModel.getUp();
             //        setDelays.setFillAlpha(110);
             setDelays.setColor(Color.RED);
             setDelays.setCircleColor(Color.RED);
@@ -114,17 +134,10 @@ public class InfoFragment extends Fragment {
             } catch (Exception e) {
                 Log.d(TAG, "onCreateView: ~~" + e);
             }
-//            mChart.getAxisRight().setDrawGridLines(false);
-//            mChart.getAxisLeft().setDrawGridLines(false);
-//            mChart.getXAxis().setDrawGridLines(false);
-//            mChart.getXAxis().setEnabled(false);
-//            mChart.getDescription().setEnabled(false);
-//            mChart.setDrawBorders(false);
             Description description = new Description();
             description.setText("");
             mChart.setTouchEnabled(true);
             mChart.setDragEnabled(true);
-//            mChart.setScaleEnabled(true);
             mChart.setScaleXEnabled(true);
             mChart.setScaleYEnabled(true);
             mChart.setPinchZoom(false);
@@ -132,7 +145,6 @@ public class InfoFragment extends Fragment {
             mChart.setData(data);
         }
         Log.d(TAG, "onCreateView: ~~");
-
         return root;
     }
 
@@ -156,6 +168,7 @@ public class InfoFragment extends Fragment {
         });
         thread.start();
     }
+
     private float getTime() {
         long millis = System.currentTimeMillis();
         long millisWithoutDays = millis - TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(millis));
@@ -170,48 +183,9 @@ public class InfoFragment extends Fragment {
         setDelays.notifyDataSetChanged();
         data.notifyDataChanged();
         mChart.notifyDataSetChanged();
-        mChart.invalidate();
+        mChart.postInvalidate();
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Activity act = getActivity();
-
-            if (intent.hasExtra("DOWNLOAD")) {
-                if (intent.getIntExtra("progress", 0) == 101) {
-                    if (act instanceof MainActivity) {
-                        Entry entry = new Entry(getTime(),
-                                (intent.getFloatExtra("DOWNLOAD", 0))*100);
-                        ((MainActivity) act).download.add(entry);
-                    }
-                } else {
-                    ((ProgressBar) root.findViewById(R.id.progressBarFI_internetSpeed))
-                            .setProgress(intent.getIntExtra("progress", 0));
-                }
-                String text = String.valueOf(intent.getFloatExtra("DOWNLOAD", 0)) + "MB/s";
-                ((TextView) root.findViewById(R.id.tvFI_internetSpeedDownload)).setText(text);
-            }
-            if (intent.hasExtra("UPLOAD")) {
-                if (intent.getIntExtra("progress", 0) == 101) {
-                    ((ImageButton) root.findViewById(R.id.ibFI_speedRequest)).setEnabled(true);
-                    ((ProgressBar) root.findViewById(R.id.progressBarFI_internetSpeed))
-                            .setProgress(0);
-                    if (act instanceof MainActivity) {
-                        Entry entry = new Entry(getTime(),
-                                (intent.getFloatExtra("UPLOAD", 0))*100);
-                        ((MainActivity) act).upload.add(entry);
-                    }
-                } else {
-                    ((ProgressBar) root.findViewById(R.id.progressBarFI_internetSpeed))
-                            .setProgress(intent.getIntExtra("progress", 0));
-                }
-                String text = String.valueOf(intent.getFloatExtra("UPLOAD", 0)) + "MB/s";
-                ((TextView) root.findViewById(R.id.tvFI_internetSpeedUpload)).setText(text);
-            }
-        }
-    };
 
     @Override
     public void onResume() {
