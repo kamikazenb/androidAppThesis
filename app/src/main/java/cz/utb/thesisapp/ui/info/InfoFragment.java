@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 import cz.utb.thesisapp.MainActivity;
 import cz.utb.thesisapp.R;
+import cz.utb.thesisapp.ui.home.HomeViewModel;
 
 public class InfoFragment extends Fragment {
 
@@ -131,6 +132,7 @@ public class InfoFragment extends Fragment {
             mChart.setData(data);
         }
         Log.d(TAG, "onCreateView: ~~");
+
         return root;
     }
 

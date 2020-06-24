@@ -13,14 +13,14 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionMenu;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.rethinkdb.RethinkDB;
-import com.rethinkdb.net.Connection;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -28,9 +28,9 @@ import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
-import androidx.navigation.NavGraph;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -47,6 +47,7 @@ import java.util.List;
 
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.ui.home.HomeFragment;
+import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.touch.TouchFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -61,14 +62,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public List delays = Collections.synchronizedList(new ArrayList<Entry>());
     public List download = Collections.synchronizedList(new ArrayList<Entry>());
     public List upload = Collections.synchronizedList(new ArrayList<Entry>());
-
+    private HomeViewModel homeViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        homeViewModel =
+                ViewModelProviders.of(this).get(HomeViewModel.class);
+
         setContentView(R.layout.activity_main);
-        fragments = getSupportFragmentManager().getFragments();
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -78,56 +80,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onClick(View view) {
             }
         });
-        //cely layout kde je menu
         drawer = findViewById(R.id.drawer_layout);
-        //konkretny panel s menu
         NavigationView navigationView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         Menu topLevelMenu = navigationView.getMenu();
-//        mAppBarConfiguration = new AppBarConfiguration.Builder(
-//                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
-//                .setDrawerLayout(drawer)
-//                .build();
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 topLevelMenu)
                 .setDrawerLayout(drawer)
                 .build();
-        //content main
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        //pripojenie menu s content main - zobrazeni burger menu
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        //pripojenie click na presun
         NavigationUI.setupWithNavController(navigationView, navController);
 
-//        navigationView.setNavigationItemSelectedListener(this);
         currentlyShownTag = HomeFragment.class.getName();
-//        Fragment home = getVisibleFragment();
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("kryo"));
 
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mService.broadcast.sendMainActivity("refresh", true);
+                homeViewModel.setRequireRefresh(true);
                 ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
         });
+
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabEdit)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 mService.broadcast.sendMainActivity("edit", true);
                 ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
         });
-//        download.add(new Entry(5, 5));
-//        download.add(new Entry(10, 3));
-//        upload.add(new Entry(3, 7));
-//        upload.add(new Entry(7, 7));
-//        delays.add(new Entry(0,2));
+
 //        delays.add(new Entry(5000,2));
         Log.d(TAG, "onCreate: ~~");
+
 
     }
 
@@ -289,6 +275,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra("paired")) {
+                try {
+                    homeViewModel.setPairedname(intent.getStringExtra("paired"));
+                    homeViewModel.setPaired(true);
+                } catch (Exception e) {
+
+                }
+            }
+            if (intent.hasExtra("unpaired")) {
+                try {
+                    homeViewModel.setPaired(false);
+                    homeViewModel.setPairedname(intent.getStringExtra(""));
+                } catch (Exception e) {
+
+                }
+            }
+            if (intent.hasExtra("command")) {
+                if (intent.getStringExtra("command").equals("setChecked")) {
+                    homeViewModel.setKryoConnected(true);
+                }
+                if (intent.getStringExtra("command").equals("setUnchecked")) {
+                    homeViewModel.setKryoConnected(false);
+                }
+            } else {
+                // Do something else
+            }
+            if (intent.hasExtra("users")) {
+                try {
+                    HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
+                    homeViewModel.setUsers(hashMap);
+                } catch (Exception e) {
+
+                }
+            }
             if (intent.hasExtra("acceptPair")) {
                 HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("acceptPair");
                 showAlertDialog("Do you accept sync with: \n \n" + hashMap.values().toArray()[0].toString(),
@@ -424,6 +444,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         mBound = false;
+        homeViewModel.setmBounded(mBound);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
@@ -438,11 +459,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             MyService.MyBinder binder = (MyService.MyBinder) service;
             mService = binder.getService();
             mBound = true;
+            homeViewModel.setmBounded(mBound);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
+            homeViewModel.setmBounded(mBound);
         }
     };
 

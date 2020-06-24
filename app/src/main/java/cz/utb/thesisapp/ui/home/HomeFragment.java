@@ -23,6 +23,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -43,51 +44,95 @@ public class HomeFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel =
-                ViewModelProviders.of(this).get(HomeViewModel.class);
+        try {
+            homeViewModel =
+                    ViewModelProviders.of(getActivity()).get(HomeViewModel.class);
+        }catch (Exception e){
+            
+        }   
+        
         root = inflater.inflate(R.layout.fragment_home, container, false);
-        final TextView textView = root.findViewById(R.id.text_home);
-        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        
+        homeViewModel.getPairedName().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                textView.setText(s);
+                ((TextView) root.findViewById(R.id.tvKryoPairName)).setText(s);
             }
         });
+        
+        homeViewModel.getRequireRefresh().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(false);
+                    homeViewModel.setRequireRefresh(false);
+                }
+            }
+        });
+        
+        homeViewModel.getKryoConnected().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(aBoolean);
+                }
+            }
+        });
+
+        homeViewModel.getPaired().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(true);
+                    ((Switch) root.findViewById(R.id.switchSynced)).setClickable(true);
+                } else {
+                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(false);
+                }
+            }
+        });
+        
+        homeViewModel.getUsers().observe(getViewLifecycleOwner(), new Observer<HashMap<String, String>>() {
+            @Override
+            public void onChanged(HashMap<String, String> stringStringHashMap) {
+                setDropdownMenu(stringStringHashMap);
+            }
+        });
+        
         Activity act = getActivity();
         if (act instanceof MainActivity) {
             sharedPreferences = PreferenceManager.getDefaultSharedPreferences(act);
             userName = sharedPreferences.getString("userName", "null");
-            if(userName.equals("null")){
+            if (userName.equals("null")) {
                 userName = "Android client";
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("userName", userName);
-                editor.commit();
+                editor.apply();
             }
         }
 
-        ((EditText)root.findViewById(R.id.etUserName)).setText(userName);
+        ((EditText) root.findViewById(R.id.etUserName)).setText(userName);
 
         ((Switch) root.findViewById(R.id.sKryoIP)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Activity act = getActivity();
                 if (isChecked) {
                     if (act instanceof MainActivity) {
-                        if (((MainActivity) act).ismBound()) {
+                        if (unboxBool(homeViewModel.getmBounded())) {
                             Log.d(TAG, "onClick: ~~");
                             String input = ((EditText) root.findViewById(R.id.etKryoIP)).getText().toString();
-                            userName = ((EditText)root.findViewById(R.id.etUserName)).getText().toString();
-                            if(userName.equals(null) || userName.length()<1){
+                            userName = ((EditText) root.findViewById(R.id.etUserName)).getText().toString();
+                            if (userName.equals(null) || userName.length() < 1) {
                                 userName = "Android client";
                             }
                             SharedPreferences.Editor editor = sharedPreferences.edit();
                             editor.putString("userName", userName);
-                            editor.commit();
+                            editor.apply();
                             ((MainActivity) act).startKryo(input, userName);
                         }
                     }
                     ((Spinner) root.findViewById(R.id.spinner)).setClickable(true);
                 } else {
-                    if (((MainActivity) act).ismBound()) {
+                    if (unboxBool(homeViewModel.getmBounded())) {
                         ((MainActivity) act).stopKryo();
                     }
                     ((Spinner) root.findViewById(R.id.spinner)).setClickable(false);
@@ -98,6 +143,7 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+        
         ((Switch) root.findViewById(R.id.switchSynced)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
@@ -112,23 +158,10 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        Log.d(TAG, "onCreateView: ~~");
-        if (act instanceof MainActivity) {
-            LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("kryo"));
-        }
-        LocalBroadcastManager.getInstance(act).registerReceiver(maReiver, new IntentFilter("MainActivity"));
-
-
         return root;
     }
-    private final BroadcastReceiver maReiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent i) {
-            if (i.hasExtra("refresh")) {
-                ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(false);
-            }
-        }
-    };
+
+
     public void setDropdownMenu(final HashMap<String, String> source) {
         ArrayList<String> spinnerArray = new ArrayList<String>();
         spinnerArray.add("Select:");
@@ -168,47 +201,6 @@ public class HomeFragment extends Fragment {
 
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            if (intent.hasExtra("users")) {
-                try {
-                    HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
-                    setDropdownMenu(hashMap);
-                } catch (Exception e) {
-
-                }
-            }
-            if (intent.hasExtra("paired")) {
-                try {
-                    ((TextView) root.findViewById(R.id.tvKryoPairName)).setText(intent.getStringExtra("paired"));
-                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(true);
-                    ((Switch) root.findViewById(R.id.switchSynced)).setClickable(true);
-                } catch (Exception e) {
-
-                }
-            }
-            if (intent.hasExtra("unpaired")) {
-                try {
-                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(false);
-                } catch (Exception e) {
-
-                }
-            }
-            if (intent.hasExtra("command")) {
-                if (intent.getStringExtra("command").equals("setChecked")) {
-                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(true);
-                }
-                if (intent.getStringExtra("command").equals("setUnchecked")) {
-                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(false);
-                }
-            } else {
-                // Do something else
-            }
-        }
-    };
 
     @Override
     public void onResume() {
@@ -226,5 +218,13 @@ public class HomeFragment extends Fragment {
     public void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ~~");
+    }
+
+    private boolean unboxBool(MutableLiveData<Boolean> a) {
+        Boolean b = a.getValue();
+        if (b == null) {
+            b = false;
+        }
+        return b;
     }
 }
