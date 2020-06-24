@@ -76,9 +76,9 @@ public class InfoFragment extends Fragment {
             public void onChanged(Integer integer) {
                 ((ProgressBar) root.findViewById(R.id.progressBarFI_internetSpeed))
                         .setProgress(integer);
-                if(integer == 0){
+                if (integer == 0) {
                     ((ImageButton) root.findViewById(R.id.ibFI_speedRequest)).setEnabled(true);
-                }else {
+                } else {
                     ((ImageButton) root.findViewById(R.id.ibFI_speedRequest)).setEnabled(false);
                 }
 
@@ -185,7 +185,6 @@ public class InfoFragment extends Fragment {
         mChart.notifyDataSetChanged();
         mChart.postInvalidate();
     }
-
 
     @Override
     public void onResume() {

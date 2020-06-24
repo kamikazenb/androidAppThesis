@@ -86,9 +86,6 @@ public class MainActivity extends AppCompatActivity {
 
         currentlyShownTag = HomeFragment.class.getName();
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(homeReceiver, new IntentFilter("kryo"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter("info"));
-
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -223,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
             if (intent.hasExtra("users")) {
                 try {
                     HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
+                    Log.d(TAG, "onReceive: ~~1"+hashMap.toString());
                     homeViewModel.setUsers(hashMap);
                 } catch (Exception e) {
 
@@ -234,9 +232,10 @@ public class MainActivity extends AppCompatActivity {
                         hashMap.keySet().toArray()[0].toString(), "kryo");
             }
 
-            if (intent.hasExtra("userInfo")) {
-                Log.d(TAG, "onReceive: ~~in if" + intent.getExtras().getString("userInfo"));
-                Toast.makeText(getApplicationContext(), intent.getExtras().getString("userInfo"), Toast.LENGTH_SHORT).show();
+            if (intent.hasExtra("connectionClosed")) {
+                homeViewModel.setKryoConnected(false);
+                Log.d(TAG, "onReceive: ~~in if" + intent.getExtras().getString("connectionClosed"));
+                Toast.makeText(getApplicationContext(), intent.getExtras().getString("connectionClosed"), Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -399,9 +398,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(homeReceiver, new IntentFilter("kryo"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter("info"));
         startService();
         Log.d(TAG, "onResume: ~~");
+        super.onResume();
     }
 
     @Override

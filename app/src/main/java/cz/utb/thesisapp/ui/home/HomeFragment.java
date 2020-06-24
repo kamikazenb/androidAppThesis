@@ -73,9 +73,9 @@ public class HomeFragment extends Fragment {
         homeViewModel.getKryoConnected().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(aBoolean);
-                }
+
+                ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(aBoolean);
+
             }
         });
 
@@ -95,6 +95,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(HashMap<String, String> stringStringHashMap) {
                 if (stringStringHashMap != null) {
+                    ((Spinner) root.findViewById(R.id.spinner)).setClickable(true);
                     setDropdownMenu(stringStringHashMap);
                 } else {
                     ((Spinner) root.findViewById(R.id.spinner)).setClickable(false);
@@ -133,9 +134,10 @@ public class HomeFragment extends Fragment {
                             editor.putString("userName", userName);
                             editor.apply();
                             ((MainActivity) act).startKryo(input, userName);
+
                         }
                     }
-                    ((Spinner) root.findViewById(R.id.spinner)).setClickable(true);
+
                 } else {
                     if (unboxBool(homeViewModel.getmBounded())) {
                         ((MainActivity) act).stopKryo();
@@ -194,6 +196,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
                 }
+
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
 

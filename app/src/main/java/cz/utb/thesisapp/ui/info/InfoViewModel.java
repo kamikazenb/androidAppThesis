@@ -32,7 +32,7 @@ public class InfoViewModel extends ViewModel {
     private MutableLiveData<LineDataSet> delay = new MutableLiveData<>();
 
     private MutableLiveData<String> downloadSpeedText = new MutableLiveData<>();
-    private MutableLiveData<String> uploadSpeedText= new MutableLiveData<>();
+    private MutableLiveData<String> uploadSpeedText = new MutableLiveData<>();
     private MutableLiveData<Integer> progress = new MutableLiveData<>();
 
     public InfoViewModel() {
@@ -47,10 +47,12 @@ public class InfoViewModel extends ViewModel {
     public void setDownloadSpeedText(String downloadSpeedText) {
         this.downloadSpeedText.setValue(downloadSpeedText);
     }
-    public void setUploadSpeedText(String uploadSpeedText){
+
+    public void setUploadSpeedText(String uploadSpeedText) {
         this.uploadSpeedText.setValue(uploadSpeedText);
     }
-    public void setProgress(Integer progress){
+
+    public void setProgress(Integer progress) {
         this.progress.setValue(progress);
     }
 
@@ -66,25 +68,31 @@ public class InfoViewModel extends ViewModel {
         return uploadSpeedText;
     }
 
-    public void uploadAddEntry(Entry entry){
+    public void uploadAddEntry(Entry entry) {
         upload.add(entry);
     }
-   public void downloadAddEntry(Entry entry){
+
+    public void downloadAddEntry(Entry entry) {
         download.add(entry);
-   }
-   public void delayAddEntry(Entry entry){
+    }
+
+    public void delayAddEntry(Entry entry) {
         delays.add(entry);
-   }
-    public LineDataSet getDl (){
+    }
+
+    public LineDataSet getDl() {
         return dl.getValue();
     }
-    public LineDataSet getUp (){
+
+    public LineDataSet getUp() {
         return up.getValue();
     }
-    public LineDataSet getDelay(){
+
+    public LineDataSet getDelay() {
         return delay.getValue();
     }
-    public List getDelays(){
+
+    public List getDelays() {
         return delays;
     }
 

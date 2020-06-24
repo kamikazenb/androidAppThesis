@@ -143,8 +143,8 @@ public class KryoClient {
                 }
                 usersMap.put(a.token, a.userName);
             }
-
             if (registeredUsers.users.size() > 0) {
+                Log.d(TAG, "NetworkRegisteredUsers: ~~1"+usersMap.toString());
                 broadcast.sendServiceHashMap("kryo", "users", usersMap);
             }
         }
@@ -311,7 +311,7 @@ public class KryoClient {
             clientReceiver.stop();
         } catch (Exception e) {
         }
-        broadcast.sendServiceString(filter, "userInfo", "Connection closed");
+        broadcast.sendServiceString(filter, "connectionClosed", "Kryonet: connection NA");
     }
 
     public boolean isClientsConnected() {
