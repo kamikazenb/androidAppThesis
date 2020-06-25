@@ -39,6 +39,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -178,12 +179,17 @@ public class InfoFragment extends Fragment {
     }
 
     private synchronized void plot() {
-        setUploads.notifyDataSetChanged();
-        setDownloads.notifyDataSetChanged();
-        setDelays.notifyDataSetChanged();
-        data.notifyDataChanged();
-        mChart.notifyDataSetChanged();
-        mChart.postInvalidate();
+        try {
+            setUploads.notifyDataSetChanged();
+            setDownloads.notifyDataSetChanged();
+            setDelays.notifyDataSetChanged();
+            data.notifyDataChanged();
+            mChart.notifyDataSetChanged();
+            mChart.postInvalidate();
+        } catch (ConcurrentModificationException e) {
+            Log.d(TAG, "plotException: ~~"+e);
+        }
+
     }
 
     @Override

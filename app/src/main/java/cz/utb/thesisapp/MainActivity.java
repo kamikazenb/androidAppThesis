@@ -43,6 +43,7 @@ import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
+import cz.utb.thesisapp.ui.touch.TouchViewModel;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     public LinkedHashMap<Integer, Date> operation = new LinkedHashMap<>();
     private HomeViewModel homeViewModel;
     private InfoViewModel infoViewModel;
+    private TouchViewModel touchViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
                 ViewModelProviders.of(this).get(HomeViewModel.class);
         infoViewModel =
                 ViewModelProviders.of(this).get(InfoViewModel.class);
+        touchViewModel =
+                ViewModelProviders.of(this).get(TouchViewModel.class);
         setContentView(R.layout.activity_main);
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -184,8 +188,32 @@ public class MainActivity extends AppCompatActivity {
         long millisWithoutDays = millis - TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(millis));
         String sb1 = Long.toString(millisWithoutDays);
         sb1 = sb1.substring(1);
-        return Float.valueOf(sb1)/1000;
+        return Float.valueOf(sb1) / 1000;
     }
+
+    private final BroadcastReceiver touchReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra("TouchMove")) {
+                ArrayList<Float> a = new ArrayList<>();
+                a.add(intent.getFloatExtra("x", 0));
+                a.add(intent.getFloatExtra("y", 0));
+                touchViewModel.setTouchMove(a);
+            }
+            if (intent.hasExtra("TouchStart")) {
+                ArrayList<Float> a = new ArrayList<>();
+                a.add(intent.getFloatExtra("x", 0));
+                a.add(intent.getFloatExtra("y", 0));
+                touchViewModel.setTouchStart(a);
+            }
+            if (intent.hasExtra("TouchUp")) {
+
+                touchViewModel.setTouchUp(true);
+            }
+        }
+    };
+
 
     private final BroadcastReceiver homeReceiver = new BroadcastReceiver() {
 
@@ -220,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
             if (intent.hasExtra("users")) {
                 try {
                     HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
-                    Log.d(TAG, "onReceive: ~~1"+hashMap.toString());
+                    Log.d(TAG, "onReceive: ~~1" + hashMap.toString());
                     homeViewModel.setUsers(hashMap);
                 } catch (Exception e) {
 
@@ -400,6 +428,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         LocalBroadcastManager.getInstance(this).registerReceiver(homeReceiver, new IntentFilter("kryo"));
         LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter("info"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter("touch"));
         startService();
         Log.d(TAG, "onResume: ~~");
         super.onResume();

@@ -12,10 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -38,7 +40,7 @@ import cz.utb.thesisapp.R;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
 
 public class TouchFragment extends Fragment {
-    private static final String TAG = "GalleryFragment";
+    private static final String TAG = "TouchFragment";
     private InfoViewModel infoViewModel;
     private TouchViewModel touchViewModel;
     MyDrawingView dvThisApp;
@@ -55,25 +57,20 @@ public class TouchFragment extends Fragment {
     volatile int dataSize = 1;
     private Thread thread;
 
+
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        touchViewModel =
-                ViewModelProviders.of(this).get(TouchViewModel.class);
+        Log.d(TAG, "onCreateView: ~~0");
         try {
+            touchViewModel =
+                    ViewModelProviders.of(getActivity()).get(TouchViewModel.class);
             infoViewModel =
                     ViewModelProviders.of(getActivity()).get(InfoViewModel.class);
         } catch (Exception e) {
 
         }
         root = inflater.inflate(R.layout.fragment_touch, container, false);
-//        final TextView textView = root.findViewById(R.id.text_gallery);
-//        touchViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                textView.setText(s);
-//            }
-//        });
-        Log.i(TAG, "~~onCreateView");
         Activity act = getActivity();
         if (act instanceof MainActivity) {
             dvThisApp = (MyDrawingView) root.findViewById(R.id.scratch_pad);
@@ -120,6 +117,45 @@ public class TouchFragment extends Fragment {
 
         startTime = new Date(System.currentTimeMillis());
 
+        touchViewModel.getTouchMove().observe(getViewLifecycleOwner(), new Observer<ArrayList<Float>>() {
+            @Override
+            public void onChanged(ArrayList<Float> floats) {
+                try {
+                    countTime(floats.get(0), floats.get(1));
+                    dvPairedApp.remoteTouchEvent("TouchMove",
+                            floats.get(0),
+                            floats.get(1));
+                }catch (Exception e){
+                    Log.d(TAG, "onChanged: ~~"+e);
+                }
+
+            }
+        });
+        touchViewModel.getTouchStart().observe(getViewLifecycleOwner(), new Observer<ArrayList<Float>>() {
+            @Override
+            public void onChanged(ArrayList<Float> floats) {
+                try {
+                    countTime(floats.get(0), floats.get(1));
+                    dvPairedApp.remoteTouchEvent("TouchStart",
+                            floats.get(0),
+                            floats.get(1));
+                }catch (Exception e){
+                    Log.d(TAG, "onChanged: ~~"+e);
+                }
+
+
+            }
+        });
+        touchViewModel.getTouchUp().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    dvPairedApp.remoteTouchEvent("TouchUp", 0, 0);
+                    touchViewModel.setTouchUp(false);
+                }
+            }
+        });
+        Log.d(TAG, "onCreateView: ~~1");
         return root;
     }
 
@@ -178,7 +214,7 @@ public class TouchFragment extends Fragment {
         long millisWithoutDays = millis - TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(millis));
         String sb1 = Long.toString(millisWithoutDays);
         sb1 = sb1.substring(1);
-        return Float.valueOf(sb1)/1000;
+        return Float.valueOf(sb1) / 1000;
     }
 
     private void countTime(float x, float y) {
@@ -190,7 +226,6 @@ public class TouchFragment extends Fragment {
                 Date thisTime = new Date(System.currentTimeMillis());
                 long seconds = (thisTime.getTime() - previousDate.getTime());
                 ((MainActivity) act).operation.remove(z.hashCode());
-                Log.d(TAG, "onReceive: ~~difference " + seconds);
                 addDataToChart(seconds);
             } catch (Exception e) {
 
@@ -209,32 +244,17 @@ public class TouchFragment extends Fragment {
     };
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
         @Override
         public void onReceive(Context context, Intent i) {
-            if (i.hasExtra("TouchStart")) {
-                countTime(i.getFloatExtra("x", 0), i.getFloatExtra("y", 0));
-                dvPairedApp.remoteTouchEvent("TouchStart",
-                        i.getFloatExtra("x", 0),
-                        i.getFloatExtra("y", 0));
-            }
-            if (i.hasExtra("TouchMove")) {
-                countTime(i.getFloatExtra("x", 0), i.getFloatExtra("y", 0));
-                dvPairedApp.remoteTouchEvent("TouchMove",
-                        i.getFloatExtra("x", 0),
-                        i.getFloatExtra("y", 0));
-            }
+
+
             if (i.hasExtra("ScreenSize")) {
             }
             if (i.hasExtra("CleanCanvas")) {
             }
-            if (i.hasExtra("TouchUp")) {
-                dvPairedApp.remoteTouchEvent("TouchUp", 0, 0);
-            }
             if (i.hasExtra("TouchTolerance")) {
             } else {               // Do something else
             }
-
         }
     };
 
@@ -256,6 +276,8 @@ public class TouchFragment extends Fragment {
 
     @Override
     public void onStop() {
+        touchViewModel.setTouchStart(null);
+        touchViewModel.setTouchMove(null);
         if (thread != null) {
             thread.interrupt();
         }
