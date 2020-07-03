@@ -11,6 +11,8 @@ import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.inter.ISpeedTestListener;
 import fr.bmartel.speedtest.model.SpeedTestError;
 
+import static cz.utb.thesisapp.GlobalValues.EXTRA_UPLOAD;
+
 public class SpeedTest {
     Broadcast broadcast;
     private static final String TAG = "SpeedTest";
@@ -101,7 +103,7 @@ public class SpeedTest {
     }
 
     public void onErrorTask(SpeedTestError speedTestError, String errorMessage) {
-        broadcast.sendInfoFragmentSpeed("UPLOAD", 0, 100);
+        broadcast.sendInfoFragmentSpeed(EXTRA_UPLOAD, 0, 100);
     }
 
 }

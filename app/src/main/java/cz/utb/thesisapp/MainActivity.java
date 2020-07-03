@@ -32,11 +32,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import cz.utb.thesisapp.services.MyService;
@@ -44,6 +42,8 @@ import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
 import cz.utb.thesisapp.ui.touch.TouchViewModel;
+
+import static cz.utb.thesisapp.GlobalValues.*;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -101,7 +101,8 @@ public class MainActivity extends AppCompatActivity {
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabEdit)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mService.broadcast.sendMainActivity("edit", true);
+                mService.broadcast.sendBoolean(FILTER_MAIN_ACTIVITY, EXTRA_EDIT, true);
+//                mService.broadcast.sendMainActivity("edit", true);
                 ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
         });
@@ -159,25 +160,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra("DOWNLOAD")) {
+            if (intent.hasExtra(EXTRA_DOWNLOAD)) {
                 Entry entry = new Entry(getTime(),
-                        (intent.getFloatExtra("DOWNLOAD", 0)) * 100);
+                        (intent.getFloatExtra(EXTRA_DOWNLOAD, 0)) * 100);
                 infoViewModel.downloadAddEntry(entry);
-                if (intent.getIntExtra("progress", 0) < 101) {
-                    infoViewModel.setProgress(intent.getIntExtra("progress", 0));
-                    infoViewModel.setDownloadSpeedText(String.valueOf(intent.getFloatExtra("DOWNLOAD", 0)) + "MB/s");
+                if (intent.getIntExtra(EXTRA_SPEED_PROGRESS, 0) < 101) {
+                    infoViewModel.setProgress(intent.getIntExtra(EXTRA_SPEED_PROGRESS, 0));
+                    infoViewModel.setDownloadSpeedText(String.valueOf(intent.getFloatExtra(EXTRA_DOWNLOAD, 0)) + "MB/s");
                 }
 
             }
-            if (intent.hasExtra("UPLOAD")) {
+            if (intent.hasExtra(EXTRA_UPLOAD)) {
                 Entry entry = new Entry(getTime(),
-                        (intent.getFloatExtra("UPLOAD", 0)) * 100);
+                        (intent.getFloatExtra(EXTRA_UPLOAD, 0)) * 100);
                 infoViewModel.uploadAddEntry(entry);
-                infoViewModel.setUploadSpeedText(String.valueOf(intent.getFloatExtra("UPLOAD", 0)) + "MB/s");
-                if (intent.getIntExtra("progress", 0) == 101) {
+                infoViewModel.setUploadSpeedText(String.valueOf(intent.getFloatExtra(EXTRA_UPLOAD, 0)) + "MB/s");
+                if (intent.getIntExtra(EXTRA_SPEED_PROGRESS, 0) == 101) {
                     infoViewModel.setProgress(0);
                 } else {
-                    infoViewModel.setProgress(intent.getIntExtra("progress", 0));
+                    infoViewModel.setProgress(intent.getIntExtra(EXTRA_SPEED_PROGRESS, 0));
                 }
             }
         }
@@ -195,19 +196,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra("TouchMove")) {
+            if (intent.hasExtra(EXTRA_TOUCH_MOVE)) {
                 ArrayList<Float> a = new ArrayList<>();
-                a.add(intent.getFloatExtra("x", 0));
-                a.add(intent.getFloatExtra("y", 0));
+                a.add(intent.getFloatExtra(EXTRA_X, 0));
+                a.add(intent.getFloatExtra(EXTRA_Y, 0));
                 touchViewModel.setTouchMove(a);
             }
-            if (intent.hasExtra("TouchStart")) {
+            if (intent.hasExtra(EXTRA_TOUCH_START)) {
                 ArrayList<Float> a = new ArrayList<>();
-                a.add(intent.getFloatExtra("x", 0));
-                a.add(intent.getFloatExtra("y", 0));
+                a.add(intent.getFloatExtra(EXTRA_X, 0));
+                a.add(intent.getFloatExtra(EXTRA_Y, 0));
                 touchViewModel.setTouchStart(a);
             }
-            if (intent.hasExtra("TouchUp")) {
+            if (intent.hasExtra(EXTRA_TOUCH_UP)) {
 
                 touchViewModel.setTouchUp(true);
             }
@@ -219,15 +220,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra("paired")) {
+            if (intent.hasExtra(EXTRA_PAIRED)) {
                 try {
-                    homeViewModel.setPairedname(intent.getStringExtra("paired"));
+                    homeViewModel.setPairedname(intent.getStringExtra(EXTRA_PAIRED));
                     homeViewModel.setPaired(true);
                 } catch (Exception e) {
 
                 }
             }
-            if (intent.hasExtra("unpaired")) {
+            if (intent.hasExtra(EXTRA_UNPAIRED)) {
                 try {
                     homeViewModel.setPaired(false);
                     homeViewModel.setPairedname(intent.getStringExtra(""));
@@ -235,17 +236,17 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-            if (intent.hasExtra("command")) {
-                if (intent.getStringExtra("command").equals("setChecked")) {
+            if (intent.hasExtra(EXTRA_COMMAND)) {
+                if (intent.getStringExtra(EXTRA_COMMAND).equals("setChecked")) {
                     homeViewModel.setKryoConnected(true);
                 }
-                if (intent.getStringExtra("command").equals("setUnchecked")) {
+                if (intent.getStringExtra(EXTRA_COMMAND).equals("setUnchecked")) {
                     homeViewModel.setKryoConnected(false);
                 }
             } else {
                 // Do something else
             }
-            if (intent.hasExtra("users")) {
+            if (intent.hasExtra(EXTRA_USERS)) {
                 try {
                     HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
                     Log.d(TAG, "onReceive: ~~1" + hashMap.toString());
@@ -254,16 +255,16 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-            if (intent.hasExtra("acceptPair")) {
+            if (intent.hasExtra(EXTRA_ACCEPT_PAIR_REQUEST)) {
                 HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("acceptPair");
                 showAlertDialog("Do you accept sync with: \n \n" + hashMap.values().toArray()[0].toString(),
                         hashMap.keySet().toArray()[0].toString(), "kryo");
             }
 
-            if (intent.hasExtra("connectionClosed")) {
+            if (intent.hasExtra(EXTRA_CONNECTION_CLOSED)) {
                 homeViewModel.setKryoConnected(false);
-                Log.d(TAG, "onReceive: ~~in if" + intent.getExtras().getString("connectionClosed"));
-                Toast.makeText(getApplicationContext(), intent.getExtras().getString("connectionClosed"), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onReceive: ~~in if" + intent.getExtras().getString(EXTRA_CONNECTION_CLOSED));
+                Toast.makeText(getApplicationContext(), intent.getExtras().getString(EXTRA_CONNECTION_CLOSED), Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -426,9 +427,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(homeReceiver, new IntentFilter("kryo"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter("info"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter("touch"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(homeReceiver, new IntentFilter(FILTER_KRYO));
+        LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter(FILTER_INFO));
+        LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter(FILTER_TOUCH));
         startService();
         Log.d(TAG, "onResume: ~~");
         super.onResume();
