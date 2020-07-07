@@ -2,6 +2,7 @@ package cz.utb.thesisapp.services;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -12,7 +13,7 @@ import java.util.HashMap;
 import static cz.utb.thesisapp.GlobalValues.*;
 
 public class Broadcast {
-
+    private static final String TAG = "Broadcast";
     MyService myService;
 
 
@@ -20,31 +21,12 @@ public class Broadcast {
         this.myService = myService;
     }
 
-    public void sendHashMap(String filter, String extraName, HashMap<String, String> hashMap) {
-        Intent i = new Intent(filter);
-        i.putExtra(extraName, hashMap);
-        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
-    }
 
-    public void sendTouchFloats(String extraTouchType, float extraX, float extraY) {
-        Intent i = new Intent(FILTER_TOUCH);
+    public void sendFloats(String filter, String extraTouchType, float extraX, float extraY) {
+        Intent i = new Intent(filter);
         i.putExtra(extraTouchType, true);
         i.putExtra(EXTRA_X, extraX);
         i.putExtra(EXTRA_Y, extraY);
-        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
-    }
-
-    public void sendTouchBoolean(String valueName, boolean data) {
-        Intent i = new Intent(FILTER_TOUCH);
-        i.putExtra(valueName, true);
-        i.putExtra("data", data);
-        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
-    }
-
-    public void sendTouchFloat(String valueName, float data) {
-        Intent i = new Intent(FILTER_TOUCH);
-        i.putExtra(valueName, true);
-        i.putExtra("data", data);
         LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
     }
 
@@ -56,49 +38,32 @@ public class Broadcast {
         LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
     }
 
-    public void sendString(String filter, String extraName, String string) {
-        Intent i = new Intent(filter);
-        i.putExtra(extraName, string);
-        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
-    }
-
-    public void sendMainActivity(String command, boolean value) {
-        Intent i = new Intent(FILTER_MAIN_ACTIVITY);
-        i.putExtra(command, value);
-        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
-        int a = 5;
-    }
-
     /**
-     * send to broadcast object of types <br>
-     * String <br>Integer <br> Boolean <br> Float
-     * @param filter    filter name
-     * @param extraName extra name
-     * @param value     CANNOT USE PRIMITIVE TYPES. Need values cast to objects
+     * send to broadcast object of type: <br>
+     * String <br>Integer <br> Boolean <br> Float <br> HashMap K-String V-String
+     *
+     * @param value throws Log.d ~~ error if incomparable type
      */
     public <T> void sendValue(String filter, String extraName, T value) {
         Intent i = new Intent(filter);
-        if (value instanceof String) {
-            i.putExtra(extraName, (String) value);
+        try {
+            if (value instanceof String) {
+                i.putExtra(extraName, (String) value);
+            } else if (value instanceof Integer) {
+                i.putExtra(extraName, (Integer) value);
+            } else if (value instanceof Float) {
+                i.putExtra(extraName, (Float) value);
+            } else if (value instanceof Boolean) {
+                i.putExtra(extraName, (Boolean) value);
+            } else if (value instanceof HashMap) {
+                i.putExtra(extraName, (HashMap<String, String>) value);
+            }
+            LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
+        } catch (ClassCastException e) {
+            Log.d(TAG, "sendValue: ~~" + e);
         }
-        if (value instanceof Integer) {
-            i.putExtra(extraName, (Integer) value);
-        }
-        if (value instanceof Float) {
-            i.putExtra(extraName, (Float) value);
-        }
-        if (value instanceof Boolean) {
-            i.putExtra(extraName, (Boolean) value);
-        }
-        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
-    }
 
-    public void sendBoolean(String filter, String extraName, boolean bool) {
-        Intent i = new Intent(filter);
-        i.putExtra(extraName, bool);
-        LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
     }
-
 
     public void sendInfoFragmentSpeed(String uploadOrDownload, float speed, int progress) {
         Intent i = new Intent(FILTER_INFO);

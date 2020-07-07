@@ -66,28 +66,25 @@ public class KryoClient {
                     NetworkRegisteredUsers(connection, object, client);
                 }
                 if (object instanceof Network.TouchStart) {
-                    broadcast.sendTouchFloats(EXTRA_TOUCH_START,
+                    broadcast.sendFloats(FILTER_TOUCH, EXTRA_TOUCH_START,
                             ((Network.TouchStart) object).x, ((Network.TouchStart) object).y);
                 }
                 if (object instanceof Network.TouchMove) {
-                    broadcast.sendTouchFloats(EXTRA_TOUCH_MOVE,
+                    broadcast.sendFloats(FILTER_TOUCH, EXTRA_TOUCH_MOVE,
                             ((Network.TouchMove) object).x, ((Network.TouchMove) object).y);
                 }
                 if (object instanceof Network.ScreenSize) {
-                    broadcast.sendTouchFloats("ScreenSize",
+                    broadcast.sendFloats(FILTER_TOUCH,"ScreenSize",
                             ((Network.ScreenSize) object).x, ((Network.ScreenSize) object).y);
                 }
                 if (object instanceof Network.CleanCanvas) {
-                    broadcast.sendTouchBoolean("CleanCanvas",
-                            ((Network.CleanCanvas) object).cleanCanvas);
+                    broadcast.sendValue(FILTER_TOUCH, "CleanCanvas", ((Network.CleanCanvas) object).cleanCanvas);
                 }
                 if (object instanceof Network.TouchUp) {
-                    broadcast.sendTouchBoolean(EXTRA_TOUCH_UP,
-                            ((Network.TouchUp) object).touchUp);
+                    broadcast.sendValue(FILTER_TOUCH, EXTRA_TOUCH_UP, ((Network.TouchUp) object).touchUp);
                 }
                 if (object instanceof Network.TouchTolerance) {
-                    broadcast.sendTouchFloat("TouchTolerance",
-                            ((Network.TouchTolerance) object).TOUCH_TOLERANCE);
+                    broadcast.sendValue(FILTER_TOUCH, "TouchTolerance", ((Network.TouchTolerance) object).TOUCH_TOLERANCE);
                 }
                 if (object instanceof Network.Speed) {
                     Log.d(TAG, "received: ~~   if (object instanceof Network.Speed) {");
@@ -103,8 +100,8 @@ public class KryoClient {
                 try {
                     //195.178.94.66
                     client.connect(5000, ip, Network.port);
-                    broadcast.sendString(FILTER_KRYO, EXTRA_USER_INFO, "connections to kryonet successful");
-                    broadcast.sendString(FILTER_KRYO, EXTRA_COMMAND, "setChecked");
+                    broadcast.sendValue(FILTER_KRYO, EXTRA_USER_INFO, "connections to kryonet successful");
+                    broadcast.sendValue(FILTER_KRYO, EXTRA_COMMAND, EXTRA_COMMAND_SET_CHECKED);
                     clientsConnected = true;
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -142,8 +139,9 @@ public class KryoClient {
                 usersMap.put(a.token, a.userName);
             }
             if (registeredUsers.users.size() > 0) {
-                Log.d(TAG, "NetworkRegisteredUsers: ~~1"+usersMap.toString());
-                broadcast.sendHashMap(FILTER_KRYO, EXTRA_USERS, usersMap);
+                Log.d(TAG, "NetworkRegisteredUsers: ~~1" + usersMap.toString());
+                broadcast.sendValue(FILTER_KRYO, EXTRA_USERS, usersMap);
+//                broadcast.sendHashMap(FILTER_KRYO, EXTRA_USERS, usersMap);
             }
         }
 
@@ -157,30 +155,31 @@ public class KryoClient {
     private void NetworkPair(Connection connection, Object object, ClientClassExtension client) {
         Log.d(TAG, "received: ~~Pair " + client.token);
         Network.Pair pair = (Network.Pair) object;
-        if (pair.seekerAccepted && !pair.respondentAccepted) {
-            String tokenPairSeeker = pair.tokenPairSeeker;
-            String userName = Objects.requireNonNull(usersHashmap.get(tokenPairSeeker)).userName;
-            HashMap<String, String> send = new HashMap<>();
-            if (pair.tokenPairSeeker.equals(clientSenderReceiver.token)) {
-                userName = "This app";
+        if(pair.connectionAlive){
+            if (pair.seekerAccepted && !pair.respondentAccepted) {
+                String userName = Objects.requireNonNull(usersHashmap.get(pair.tokenPairSeeker)).userName;
+                HashMap<String, String> send = new HashMap<>();
+                if (pair.tokenPairSeeker.equals(clientSenderReceiver.token)) {
+                    userName = "This app";
+                }
+                send.put(pair.tokenPairSeeker, userName);
+//            broadcast.sendHashMap(FILTER_KRYO, EXTRA_ACCEPT_PAIR_REQUEST, send);
+                broadcast.sendValue(FILTER_KRYO, EXTRA_ACCEPT_PAIR_REQUEST, send);
             }
-            send.put(tokenPairSeeker, userName);
-            broadcast.sendHashMap(FILTER_KRYO, EXTRA_ACCEPT_PAIR_REQUEST, send);
-        }
-        if (pair.seekerAccepted && pair.respondentAccepted) {
-            if (pair.tokenPairRespondent.equals(client.token)) {
-                client.pairedToken = pair.tokenPairSeeker;
-            } else {
-                client.pairedToken = pair.tokenPairRespondent;
+            if (pair.seekerAccepted && pair.respondentAccepted) {
+                if (pair.tokenPairRespondent.equals(client.token)) {
+                    client.pairedToken = pair.tokenPairSeeker;
+                } else {
+                    client.pairedToken = pair.tokenPairRespondent;
+                }
+                try {
+                    broadcast.sendValue(FILTER_KRYO, EXTRA_PAIRED, (String) usersHashmap.get(client.pairedToken).userName);
+                } catch (Exception e) {
+                }
             }
-            try {
-                broadcast.sendString(FILTER_KRYO, EXTRA_PAIRED, usersHashmap.get(client.pairedToken).userName);
-            } catch (Exception e) {
-            }
-        }
-        if (!pair.seekerAccepted) {
+        }else  {
             client.pairedToken = null;
-            broadcast.sendString(FILTER_KRYO, EXTRA_UNPAIRED, "");
+            broadcast.sendValue(FILTER_KRYO, EXTRA_UNPAIRED, "");
         }
     }
 
@@ -194,6 +193,7 @@ public class KryoClient {
         pair.tokenPairSeeker = seekerToken;
         pair.seekerAccepted = true;
         pair.respondentAccepted = result;
+        pair.connectionAlive = result;
         final Network.Pair sendPair = pair;
         Thread t = new Thread() {
             public void run() {
@@ -259,7 +259,7 @@ public class KryoClient {
         pair.tokenPairRespondent = clientSenderReceiver.token;
         pair.tokenPairSeeker = clientSenderReceiver.pairedToken;
         pair.seekerAccepted = false;
-        pair.seekerAccepted = false;
+        pair.connectionAlive = false;
         final Network.Pair sendPair = pair;
         Thread t = new Thread() {
             public void run() {
@@ -278,6 +278,7 @@ public class KryoClient {
             Network.Pair pair = new Network.Pair();
             pair.seekerAccepted = true;
             pair.respondentAccepted = false;
+            pair.connectionAlive = true;
             pair.tokenPairRespondent = partnerToken;
             pair.tokenPairSeeker = clientSenderReceiver.token;
             final Network.Pair sendPair = pair;
@@ -309,8 +310,7 @@ public class KryoClient {
             clientReceiver.stop();
         } catch (Exception e) {
         }
-        broadcast.sendValue(FILTER_KRYO, EXTRA_CONNECTION_CLOSED, (String)"Kryonet: connection NA");
-//        broadcast.sendString(FILTER_KRYO, EXTRA_CONNECTION_CLOSED, "Kryonet: connection NA");
+        broadcast.sendValue(FILTER_KRYO, EXTRA_CONNECTION_CLOSED, "Kryonet: connection NA");
     }
 
     public boolean isClientsConnected() {
@@ -320,8 +320,8 @@ public class KryoClient {
     public void setClientsConnected(boolean clientsConnected) {
         this.clientsConnected = clientsConnected;
         if (!clientsConnected) {
-            broadcast.sendString(FILTER_KRYO, EXTRA_USER_INFO, "There is a connection error");
-            broadcast.sendString(FILTER_KRYO, EXTRA_COMMAND, "setUnchecked");
+            broadcast.sendValue(FILTER_KRYO, EXTRA_USER_INFO, "There is a connection error");
+            broadcast.sendValue(FILTER_KRYO, EXTRA_COMMAND, EXTRA_COMMAND_SET_UNCHECKED);
             stopClients();
         }
     }

@@ -101,8 +101,8 @@ public class MainActivity extends AppCompatActivity {
         ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabEdit)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mService.broadcast.sendBoolean(FILTER_MAIN_ACTIVITY, EXTRA_EDIT, true);
-//                mService.broadcast.sendMainActivity("edit", true);
+
+                mService.broadcast.sendValue(FILTER_MAIN_ACTIVITY, EXTRA_EDIT, true);
                 ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
         });
@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
-    private final BroadcastReceiver homeReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver kryoReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -237,14 +237,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if (intent.hasExtra(EXTRA_COMMAND)) {
-                if (intent.getStringExtra(EXTRA_COMMAND).equals("setChecked")) {
+                if (intent.getStringExtra(EXTRA_COMMAND).equals(EXTRA_COMMAND_SET_CHECKED)) {
                     homeViewModel.setKryoConnected(true);
                 }
-                if (intent.getStringExtra(EXTRA_COMMAND).equals("setUnchecked")) {
+                if (intent.getStringExtra(EXTRA_COMMAND).equals(EXTRA_COMMAND_SET_UNCHECKED)) {
                     homeViewModel.setKryoConnected(false);
                 }
-            } else {
-                // Do something else
             }
             if (intent.hasExtra(EXTRA_USERS)) {
                 try {
@@ -384,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
 
         mBound = false;
         homeViewModel.setmBounded(mBound);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(homeReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(kryoReceiver);
     }
 
     /**
@@ -427,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(homeReceiver, new IntentFilter(FILTER_KRYO));
+        LocalBroadcastManager.getInstance(this).registerReceiver(kryoReceiver, new IntentFilter(FILTER_KRYO));
         LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter(FILTER_INFO));
         LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter(FILTER_TOUCH));
         startService();

@@ -30,11 +30,12 @@ public class Network {
         public float download;
         public float upload;
     }
-    static public class Pair{
+    static public class Pair {
         public String tokenPairSeeker;
         public String tokenPairRespondent;
         public boolean seekerAccepted;
         public boolean respondentAccepted;
+        public boolean connectionAlive;
     }
 
     static public class Integers{
