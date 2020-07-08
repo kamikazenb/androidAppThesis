@@ -74,7 +74,7 @@ public class KryoClient {
                             ((Network.TouchMove) object).x, ((Network.TouchMove) object).y);
                 }
                 if (object instanceof Network.ScreenSize) {
-                    broadcast.sendFloats(FILTER_TOUCH,"ScreenSize",
+                    broadcast.sendFloats(FILTER_TOUCH, "ScreenSize",
                             ((Network.ScreenSize) object).x, ((Network.ScreenSize) object).y);
                 }
                 if (object instanceof Network.CleanCanvas) {
@@ -85,6 +85,10 @@ public class KryoClient {
                 }
                 if (object instanceof Network.TouchTolerance) {
                     broadcast.sendValue(FILTER_TOUCH, "TouchTolerance", ((Network.TouchTolerance) object).TOUCH_TOLERANCE);
+                }
+                if (object instanceof Network.UseDatabase) {
+                    Log.d(TAG, "received: ~~useDatabase");
+                    broadcast.sendValue(FILTER_KRYO, EXTRA_KROYSERVER_USE_DATABASE, ((Network.UseDatabase) object).useDatabase);
                 }
                 if (object instanceof Network.Speed) {
                     Log.d(TAG, "received: ~~   if (object instanceof Network.Speed) {");
@@ -155,7 +159,7 @@ public class KryoClient {
     private void NetworkPair(Connection connection, Object object, ClientClassExtension client) {
         Log.d(TAG, "received: ~~Pair " + client.token);
         Network.Pair pair = (Network.Pair) object;
-        if(pair.connectionAlive){
+        if (pair.connectionAlive) {
             if (pair.seekerAccepted && !pair.respondentAccepted) {
                 String userName = Objects.requireNonNull(usersHashmap.get(pair.tokenPairSeeker)).userName;
                 HashMap<String, String> send = new HashMap<>();
@@ -177,10 +181,21 @@ public class KryoClient {
                 } catch (Exception e) {
                 }
             }
-        }else  {
+        } else {
             client.pairedToken = null;
             broadcast.sendValue(FILTER_KRYO, EXTRA_UNPAIRED, "");
         }
+    }
+
+    public void sendUseDatabase(boolean bool) {
+        Network.UseDatabase useDatabase = new Network.UseDatabase();
+        useDatabase.useDatabase = bool;
+        Thread t = new Thread() {
+            public void run() {
+                clientSenderReceiver.sendTCP(useDatabase);
+            }
+        };
+        t.start();
     }
 
     public void sendPairAcceptationResult(String seekerToken, boolean result) {

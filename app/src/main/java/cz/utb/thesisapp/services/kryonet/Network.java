@@ -25,6 +25,10 @@ public class Network {
         kryo.register(ScreenSize.class);
         kryo.register(Request.class);
         kryo.register(Speed.class);
+        kryo.register(UseDatabase.class);
+    }
+    static public class UseDatabase {
+        public boolean useDatabase;
     }
     static public class Speed {
         public float download;

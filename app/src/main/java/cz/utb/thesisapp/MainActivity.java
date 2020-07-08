@@ -7,6 +7,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -18,6 +21,7 @@ import com.github.clans.fab.FloatingActionMenu;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.rethinkdb.gen.ast.Db;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
@@ -109,8 +113,29 @@ public class MainActivity extends AppCompatActivity {
 
 //        delays.add(new Entry(5000,2));
         Log.d(TAG, "onCreate: ~~");
+        readFromLocalStorage();
+    }
 
+//    rework
+    private void readFromLocalStorage(){
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
 
+        Cursor cursor = dbHelper.readFromLocalDatabase(db);
+
+        while (cursor.moveToNext()){
+            String created = cursor.getString(cursor.getColumnIndex(DB_CLIENT_CREATED));
+            Log.d(TAG, "readFromLocalStorage: ~~"+created);
+        }
+        cursor.close();
+        dbHelper.close();
+    }
+
+    private void saveToLocalDatabase(Date created, float x, float y, String touchType){
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        dbHelper.saveToLocalDatabase(touchType, x, y,created , db);
+        dbHelper.close();
     }
 
 
@@ -201,16 +226,21 @@ public class MainActivity extends AppCompatActivity {
                 a.add(intent.getFloatExtra(EXTRA_X, 0));
                 a.add(intent.getFloatExtra(EXTRA_Y, 0));
                 touchViewModel.setTouchMove(a);
+                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
+                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_MOVE);
             }
             if (intent.hasExtra(EXTRA_TOUCH_START)) {
                 ArrayList<Float> a = new ArrayList<>();
                 a.add(intent.getFloatExtra(EXTRA_X, 0));
                 a.add(intent.getFloatExtra(EXTRA_Y, 0));
                 touchViewModel.setTouchStart(a);
+                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
+                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_START);
             }
             if (intent.hasExtra(EXTRA_TOUCH_UP)) {
-
                 touchViewModel.setTouchUp(true);
+                saveToLocalDatabase(new Date(System.currentTimeMillis()), (float) 0.0,
+                        (float)0.0, EXTRA_TOUCH_UP);
             }
         }
     };
@@ -224,6 +254,13 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     homeViewModel.setPairedname(intent.getStringExtra(EXTRA_PAIRED));
                     homeViewModel.setPaired(true);
+                } catch (Exception e) {
+
+                }
+            }
+            if (intent.hasExtra(EXTRA_KROYSERVER_USE_DATABASE)) {
+                try {
+                    homeViewModel.setKryoUseDatabase(intent.getBooleanExtra(EXTRA_KROYSERVER_USE_DATABASE, true));
                 } catch (Exception e) {
 
                 }
@@ -338,6 +375,12 @@ public class MainActivity extends AppCompatActivity {
             if (mService.kryoClient.isClientsConnected()) {
                 mService.kryoClient.unPair();
             }
+        }
+    }
+
+    public void kryoUseDatabase(Boolean bool) {
+        if (ismBound()) {
+           mService.kryoClient.sendUseDatabase(bool);
         }
     }
 

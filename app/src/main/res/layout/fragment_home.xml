@@ -2,9 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:tag="fragment_home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:tag="fragment_home"
     tools:context=".ui.home.HomeFragment">
 
 
@@ -105,6 +105,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:text="195.178.94.66"
+                android:textColorHint="#000000"
                 app:layout_constraintBottom_toBottomOf="@id/tv2"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guideLeft2"
@@ -122,6 +123,39 @@
                 app:layout_constraintTop_toTopOf="@id/tv2" />
 
             <TextView
+                android:id="@+id/tv2.5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:paddingVertical="20dp"
+                android:text="DBZ"
+                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv2" />
+
+            <TextView
+                android:id="@+id/tv2.6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingVertical="20dp"
+                android:text="Kryonet server using DBZ"
+                app:layout_constraintBottom_toBottomOf="@id/tv2.5"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toEndOf="@id/guideLeft2"
+                app:layout_constraintTop_toTopOf="@id/tv2.5" />
+
+            <Switch
+                android:id="@+id/sKryoDB"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:foregroundGravity="center"
+                app:layout_constraintBottom_toBottomOf="@id/tv2.5"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guidelineRight"
+                app:layout_constraintTop_toTopOf="@id/tv2.5" />
+
+            <TextView
                 android:id="@+id/tv3"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -130,7 +164,7 @@
                 android:text="Device to sync"
                 app:layout_constraintEnd_toStartOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tv2" />
+                app:layout_constraintTop_toBottomOf="@+id/tv2.5" />
 
             <Spinner
                 android:id="@+id/spinner"
@@ -155,11 +189,11 @@
                 app:layout_constraintTop_toBottomOf="@+id/tv3" />
 
             <TextView
-                android:paddingVertical="20dp"
                 android:id="@+id/tvKryoPairName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="left"
+                android:paddingVertical="20dp"
                 android:textColor="#000"
                 app:layout_constraintBottom_toBottomOf="@+id/tv4"
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"

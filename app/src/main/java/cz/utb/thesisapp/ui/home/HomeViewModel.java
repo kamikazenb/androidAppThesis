@@ -13,12 +13,14 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<Boolean> requireRefresh = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoConnected = new MutableLiveData<>();
     private MutableLiveData<Boolean> paired = new MutableLiveData<>();
+    private MutableLiveData<Boolean> kryoUseDatabase = new MutableLiveData<>();
     private MutableLiveData<HashMap<String, String>> users = new MutableLiveData<>();
 
     public HomeViewModel() {
         mBounded.setValue(false);
         requireRefresh.setValue(false);
         kryoConnected.setValue(false);
+        kryoUseDatabase.setValue(true);
     }
 
     public MutableLiveData<Boolean> getPaired() {
@@ -51,6 +53,13 @@ public class HomeViewModel extends ViewModel {
 
     public void setRequireRefresh(Boolean requireRefresh) {
         this.requireRefresh.setValue(requireRefresh);
+    }
+    public MutableLiveData<Boolean> getKryoUseDatabase() {
+        return kryoUseDatabase;
+    }
+
+    public void setKryoUseDatabase(Boolean kryoUseDatabase) {
+        this.requireRefresh.setValue(kryoUseDatabase);
     }
 
     public void setmBounded(Boolean _mBounded) {
