@@ -31,7 +31,9 @@ public class GlobalValues {
     public static final String EXTRA_SPEED_PROGRESS = "progress";
 
     //db
+
     public static final String DB_DATABASE_NAME = "appDB";
+    public static final String DB_ID = "id";
     public static final String DB_TABLE_NAME = "touch";
     public static final String DB_X = "x";
     public static final String DB_Y = "y";

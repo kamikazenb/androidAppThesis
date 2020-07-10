@@ -4,7 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 
 import java.util.ArrayList;
-
+import java.util.Date;
 
 public class Network {
     static public final int port = 50201;
@@ -26,6 +26,7 @@ public class Network {
         kryo.register(Request.class);
         kryo.register(Speed.class);
         kryo.register(UseDatabase.class);
+        kryo.register(java.util.Date.class);
     }
     static public class UseDatabase {
         public boolean useDatabase;
@@ -67,10 +68,14 @@ public class Network {
     static public class TouchStart{
         float x;
         float y;
+        Date clientCreated;
+        Date serverReceived;
     }
     static public class TouchMove{
         float x;
         float y;
+        Date clientCreated;
+        Date serverReceived;
     }
     static public class CleanCanvas{
         boolean cleanCanvas;
@@ -81,6 +86,8 @@ public class Network {
     }
     static public  class TouchUp{
         boolean touchUp;
+        Date clientCreated;
+        Date serverReceived;
     }
     static public class ScreenSize{
         float x;

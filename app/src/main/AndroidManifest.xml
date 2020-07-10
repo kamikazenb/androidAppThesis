@@ -20,7 +20,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <provider
+            android:authorities="cz.utb.thesisapp.contentProvider"
+            android:name=".contentProvider.MyContentProvider"
+            android:readPermission="true"
+            android:writePermission="true"
+            />
         <service android:name=".services.MyService" />
     </application>
 

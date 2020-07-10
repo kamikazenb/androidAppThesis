@@ -2,26 +2,28 @@ package cz.utb.thesisapp;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.Loader;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionMenu;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.rethinkdb.gen.ast.Db;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
@@ -35,21 +37,25 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
+import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
 import cz.utb.thesisapp.ui.touch.TouchViewModel;
 
+import android.app.LoaderManager;
+
 import static cz.utb.thesisapp.GlobalValues.*;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
     private AppBarConfiguration mAppBarConfiguration;
     private DrawerLayout drawer;
@@ -61,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private HomeViewModel homeViewModel;
     private InfoViewModel infoViewModel;
     private TouchViewModel touchViewModel;
+    private SimpleCursorAdapter dataAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,29 +120,34 @@ public class MainActivity extends AppCompatActivity {
 
 //        delays.add(new Entry(5000,2));
         Log.d(TAG, "onCreate: ~~");
-        readFromLocalStorage();
+//        readFromLocalStorage();
+        init();
     }
 
-//    rework
-    private void readFromLocalStorage(){
+    //    rework
+    /*
+    private void readFromLocalStorage() {
         DbHelper dbHelper = new DbHelper(this);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         Cursor cursor = dbHelper.readFromLocalDatabase(db);
 
-        while (cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             String created = cursor.getString(cursor.getColumnIndex(DB_CLIENT_CREATED));
-            Log.d(TAG, "readFromLocalStorage: ~~"+created);
+            Log.d(TAG, "readFromLocalStorage: ~~" + created);
         }
         cursor.close();
         dbHelper.close();
     }
-
-    private void saveToLocalDatabase(Date created, float x, float y, String touchType){
-        DbHelper dbHelper = new DbHelper(this);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        dbHelper.saveToLocalDatabase(touchType, x, y,created , db);
-        dbHelper.close();
+*/
+    private void saveToLocalDatabase(Date created, float x, float y, String touchType) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DB_TOUCH_TYPE, touchType);
+        contentValues.put(DB_X, x);
+        contentValues.put(DB_Y, y);
+        contentValues.put(DB_SERVER_RECEIVED, dateFormat.format(created));
+        getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
     }
 
 
@@ -179,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.d(TAG, "onClick: ~~" + e);
         }
+
     }
 
     private final BroadcastReceiver infoReceiver = new BroadcastReceiver() {
@@ -226,21 +239,22 @@ public class MainActivity extends AppCompatActivity {
                 a.add(intent.getFloatExtra(EXTRA_X, 0));
                 a.add(intent.getFloatExtra(EXTRA_Y, 0));
                 touchViewModel.setTouchMove(a);
-                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
-                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_MOVE);
+
+//                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
+//                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_MOVE);
             }
             if (intent.hasExtra(EXTRA_TOUCH_START)) {
                 ArrayList<Float> a = new ArrayList<>();
                 a.add(intent.getFloatExtra(EXTRA_X, 0));
                 a.add(intent.getFloatExtra(EXTRA_Y, 0));
                 touchViewModel.setTouchStart(a);
-                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
-                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_START);
+//                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
+//                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_START);
             }
             if (intent.hasExtra(EXTRA_TOUCH_UP)) {
                 touchViewModel.setTouchUp(true);
-                saveToLocalDatabase(new Date(System.currentTimeMillis()), (float) 0.0,
-                        (float)0.0, EXTRA_TOUCH_UP);
+//                saveToLocalDatabase(new Date(System.currentTimeMillis()), (float) 0.0,
+//                        (float) 0.0, EXTRA_TOUCH_UP);
             }
         }
     };
@@ -380,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void kryoUseDatabase(Boolean bool) {
         if (ismBound()) {
-           mService.kryoClient.sendUseDatabase(bool);
+            mService.kryoClient.sendUseDatabase(bool);
         }
     }
 
@@ -473,6 +487,8 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter(FILTER_TOUCH));
         startService();
         Log.d(TAG, "onResume: ~~");
+        //Starts a new or restarts an existing Loader in this manager
+        getLoaderManager().restartLoader(0, null, this);
         super.onResume();
     }
 
@@ -482,4 +498,53 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        String[] projection = {
+                DB_TOUCH_TYPE,
+                DB_X,
+                DB_Y,
+                DB_CLIENT_CREATED,
+                DB_SERVER_RECEIVED,
+                DB_CLIENT_RECEIVED
+        };
+        return new CursorLoader(this,
+                MyContentProvider.CONTENT_URI, projection, null, null, null);
+    }
+
+    public void init() {
+        DbHelper dbHelper = new DbHelper(this);
+        dbHelper.onUpgrade(dbHelper.getWritableDatabase(), 0, 1);
+        getLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        // Swap the new cursor in.  (The framework will take care of closing the
+        // old cursor once we return.)
+        while (cursor.moveToNext()) {
+            Log.d(TAG, "~~" + cursor.getString(0) + " creat:" + cursor.getString(3)
+                    + " serverRec:" + cursor.getString(4) + " clientRec:" + cursor.getString(5));
+        }
+        Log.d(TAG, "onLoadFinished: ~~-------------------------------------------");
+        cursor.setNotificationUri(getContentResolver(), MyContentProvider.CONTENT_URI);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // This is called when the last Cursor provided to onLoadFinished()
+        // above is about to be closed.  We need to make sure we are no
+        // longer using it.
+//        dataAdapter.swapCursor(null);
+    }
+
+    public void dltDatabase(String where) {
+        String selection = DB_TOUCH_TYPE + " LIKE ?";
+        String[] selectionArgs = {where};
+        getContentResolver().delete(MyContentProvider.CONTENT_URI, selection, selectionArgs);
+    }
+
+
 }
