@@ -11,6 +11,8 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -36,6 +38,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.net.URI;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import cz.utb.thesisapp.contentProvider.DbHelper;
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
+import cz.utb.thesisapp.services.kryonet.Network;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
@@ -68,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private InfoViewModel infoViewModel;
     private TouchViewModel touchViewModel;
     private SimpleCursorAdapter dataAdapter;
+    private Cursor oldCursor;
+    SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 */
     private void saveToLocalDatabase(Date created, float x, float y, String touchType) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
         ContentValues contentValues = new ContentValues();
         contentValues.put(DB_TOUCH_TYPE, touchType);
         contentValues.put(DB_X, x);
@@ -230,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return Float.valueOf(sb1) / 1000;
     }
 
-    private final BroadcastReceiver touchReceiver = new BroadcastReceiver() {
+/*    private final BroadcastReceiver touchReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -257,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 //                        (float) 0.0, EXTRA_TOUCH_UP);
             }
         }
-    };
+    };*/
 
 
     private final BroadcastReceiver kryoReceiver = new BroadcastReceiver() {
@@ -332,7 +339,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Float z = x + y;
         operation.put(z.hashCode(), new Date(System.currentTimeMillis()));
     }
-
 
 
     public void startKryo(String ip, String userName) {
@@ -467,7 +473,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onResume() {
         LocalBroadcastManager.getInstance(this).registerReceiver(kryoReceiver, new IntentFilter(FILTER_KRYO));
         LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter(FILTER_INFO));
-        LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter(FILTER_TOUCH));
+//        LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter(FILTER_TOUCH));
         startService();
         Log.d(TAG, "onResume: ~~");
         //Starts a new or restarts an existing Loader in this manager
@@ -507,13 +513,44 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        while (cursor.moveToNext()) {
-            Log.d(TAG, "~~" + cursor.getString(0) + " creat:" + cursor.getString(3)
-                    + " serverRec:" + cursor.getString(4) + " clientRec:" + cursor.getString(5));
-        }
         Log.d(TAG, "onLoadFinished: ~~-------------------------------------------");
         cursor.setNotificationUri(getContentResolver(), MyContentProvider.CONTENT_URI);
+        if (oldCursor != null) {
+            int diff = cursor.getCount() - oldCursor.getCount();
+            setViewModelTouch(cursor, oldCursor.getCount());
+            oldCursor = cursor;
+        } else {
+            setViewModelTouch(cursor, 0);
+            oldCursor = cursor;
+        }
     }
+
+    public void setViewModelTouch(Cursor cursor, int position) {
+        int i = position;
+        ArrayList<Touch> al = new ArrayList<>();
+        while (cursor.moveToPosition(i)) {
+          /*  Log.d(TAG, "~~" + cursor.getString(0) + " creat:" + cursor.getString(3)
+                    + " serverRec:" + cursor.getString(4) + " clientRec:" + cursor.getString(5));*/
+            Touch touch = new Touch();
+            touch.touchType = cursor.getString(0);
+            touch.x = cursor.getFloat(1);
+            touch.y = cursor.getFloat(2);
+            try {
+                touch.clientCreated = dateFormat.parse(cursor.getString(3));
+                touch.serverReceived = dateFormat.parse(cursor.getString(4));
+                touch.clientReceived = dateFormat.parse(cursor.getString(5));
+            } catch (ParseException e) {
+                Log.d(TAG, "setViewModelTouch: ~~" + e);
+                touch.clientCreated = new Date(System.currentTimeMillis());
+                touch.serverReceived = new Date(System.currentTimeMillis());
+                touch.clientReceived = new Date(System.currentTimeMillis());
+            }
+            al.add(touch);
+            i++;
+        }
+        touchViewModel.setTouch(al);
+    }
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {

@@ -61,9 +61,10 @@ public class MyContentProvider extends ContentProvider {
         queryBuilder.setTables(DB_TABLE_NAME);
         switch (uriMatcher.match(uri)) {
             case ALL_TOUCHES:
-                //do nothing
+//                Log.d(TAG, "query: ~~ do nothing");
                 break;
             case SINGLE_TOUCH:
+//                Log.d(TAG, "query: ~~ do all");
                 String id = uri.getLastPathSegment(); //tu bude asi chyba
                 queryBuilder.appendWhere(DB_CLIENT_CREATED + "=" + id);
                 break;

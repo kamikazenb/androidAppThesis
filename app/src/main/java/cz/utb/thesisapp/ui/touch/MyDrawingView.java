@@ -100,8 +100,6 @@ public class MyDrawingView extends View {
         this.x = x;
         this.y = y;
         canvas.drawPath(path, paint);
-
-
     }
 
     private void touchMove(float x, float y) {
@@ -131,7 +129,7 @@ public class MyDrawingView extends View {
 
     public void remoteTouchEvent(String action, float x, float y) {
         switch (action) {
-            case "TouchStart":
+            case EXTRA_TOUCH_START:
                 if (!drawMode) {
                     paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
                 } else {
@@ -140,7 +138,7 @@ public class MyDrawingView extends View {
                 touchStart(x, y);
                 invalidate();
                 break;
-            case "TouchMove":
+            case EXTRA_TOUCH_MOVE:
                 touchMove(x, y);
                 if (!drawMode) {
                     path.lineTo(this.x, this.y);
@@ -150,7 +148,7 @@ public class MyDrawingView extends View {
                 canvas.drawPath(path, paint);
                 invalidate();
                 break;
-            case "TouchUp":
+            case EXTRA_TOUCH_UP:
                 touchUp();
                 invalidate();
                 break;

@@ -28,6 +28,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import cz.utb.thesisapp.Event;
+import cz.utb.thesisapp.GlobalValues;
 import cz.utb.thesisapp.MainActivity;
 import cz.utb.thesisapp.R;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
@@ -56,12 +58,11 @@ public class TouchFragment extends Fragment {
     volatile LineData data;
     volatile int dataSize = 1;
     private Thread thread;
-
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView: ~~0");
         try {
             touchViewModel =
                     ViewModelProviders.of(getActivity()).get(TouchViewModel.class);
@@ -116,46 +117,22 @@ public class TouchFragment extends Fragment {
         mChart.setData(data);
 
         startTime = new Date(System.currentTimeMillis());
-
-        touchViewModel.getTouchMove().observe(getViewLifecycleOwner(), new Observer<ArrayList<Float>>() {
+        touchViewModel.getTouch().observe(getViewLifecycleOwner(), new Observer<ArrayList<GlobalValues.Touch>>() {
             @Override
-            public void onChanged(ArrayList<Float> floats) {
+            public void onChanged(ArrayList<GlobalValues.Touch> touches) {
                 try {
-                    countTime(floats.get(0), floats.get(1));
-                    dvPairedApp.remoteTouchEvent("TouchMove",
-                            floats.get(0),
-                            floats.get(1));
-                }catch (Exception e){
-                    Log.d(TAG, "onChanged: ~~"+e);
+                    for (GlobalValues.Touch touch : touches) {
+                        Log.d(TAG, "onChanged: ~~" + touch.touchType + " " + touch.clientReceived);
+                        countTime(touch.clientCreated, touch.clientReceived);
+                        dvPairedApp.remoteTouchEvent(touch.touchType, touch.x, touch.y);
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "onChanged: ~~" + e);
                 }
 
             }
         });
-        touchViewModel.getTouchStart().observe(getViewLifecycleOwner(), new Observer<ArrayList<Float>>() {
-            @Override
-            public void onChanged(ArrayList<Float> floats) {
-                try {
-                    countTime(floats.get(0), floats.get(1));
-                    dvPairedApp.remoteTouchEvent("TouchStart",
-                            floats.get(0),
-                            floats.get(1));
-                }catch (Exception e){
-                    Log.d(TAG, "onChanged: ~~"+e);
-                }
 
-
-            }
-        });
-        touchViewModel.getTouchUp().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    dvPairedApp.remoteTouchEvent("TouchUp", 0, 0);
-                    touchViewModel.setTouchUp(false);
-                }
-            }
-        });
-        Log.d(TAG, "onCreateView: ~~1");
         return root;
     }
 
@@ -217,15 +194,11 @@ public class TouchFragment extends Fragment {
         return Float.valueOf(sb1) / 1000;
     }
 
-    private void countTime(float x, float y) {
-        Float z = x + y;
+    private void countTime(Date clientCreated, Date clientReceived) {
         Activity act = getActivity();
         if (act instanceof MainActivity) {
             try {
-                Date previousDate = ((MainActivity) act).operation.get(z.hashCode());
-                Date thisTime = new Date(System.currentTimeMillis());
-                long seconds = (thisTime.getTime() - previousDate.getTime());
-                ((MainActivity) act).operation.remove(z.hashCode());
+                long seconds = (clientReceived.getTime() - clientCreated.getTime());
                 addDataToChart(seconds);
             } catch (Exception e) {
 
@@ -246,7 +219,6 @@ public class TouchFragment extends Fragment {
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent i) {
-
 
             if (i.hasExtra("ScreenSize")) {
             }
@@ -276,8 +248,8 @@ public class TouchFragment extends Fragment {
 
     @Override
     public void onStop() {
-        touchViewModel.setTouchStart(null);
-        touchViewModel.setTouchMove(null);
+//        touchViewModel.setTouchStart(null);
+//        touchViewModel.setTouchMove(null);
         if (thread != null) {
             thread.interrupt();
         }

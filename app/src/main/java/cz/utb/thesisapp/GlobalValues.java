@@ -1,5 +1,7 @@
 package cz.utb.thesisapp;
 
+import java.util.Date;
+
 import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_MOVE;
 import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_START;
 import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_UP;
@@ -45,4 +47,15 @@ public class GlobalValues {
     public static final String DB_CLIENT_CREATED = "clientCreated";
     public static final String DB_SERVER_RECEIVED = "serverReceived";
     public static final String DB_CLIENT_RECEIVED = "clientReceived";
+
+    public static final String DATE_FORMAT ="yyyy-MM-dd HH:mm:ss.SSS";
+
+     static public class Touch {
+         public float x;
+         public float y;
+         public String touchType;
+         public Date clientCreated;
+         public Date serverReceived;
+         public Date clientReceived;
+    }
 }

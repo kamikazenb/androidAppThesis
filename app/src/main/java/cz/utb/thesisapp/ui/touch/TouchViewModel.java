@@ -10,48 +10,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import cz.utb.thesisapp.GlobalValues;
+import cz.utb.thesisapp.services.kryonet.Network;
+
 public class TouchViewModel extends ViewModel {
 
     private static final String TAG = "TouchViewModel";
     private MutableLiveData<String> mText;
-    private MutableLiveData<ArrayList<Float>> touchStart = new MutableLiveData<>();
-    private MutableLiveData<ArrayList<Float>> touchMove = new MutableLiveData<>();
-    private MutableLiveData<Boolean> touchUp = new MutableLiveData<>();
-
-
+    private MutableLiveData<ArrayList<GlobalValues.Touch>> touch = new MutableLiveData<>();
 
     public TouchViewModel() {
 //        mText = new MutableLiveData<>();
 //        mText.setValue(" ");
-        Log.i(TAG, "::TouchViewModel");
-        touchUp.setValue(false);
+//        touchUp.setValue(false);
+    }
+    public MutableLiveData<ArrayList<GlobalValues.Touch>> getTouch() {
+        return touch;
     }
 
-
-
-
-    public MutableLiveData<ArrayList<Float>> getTouchMove() {
-        return touchMove;
-    }
-
-    public void setTouchMove(ArrayList<Float> touchStart) {
-        this.touchMove.setValue(touchStart);
-    }
-
-    public MutableLiveData<Boolean> getTouchUp() {
-        return touchUp;
-    }
-
-    public void setTouchUp(Boolean touchUp) {
-        this.touchUp.setValue(touchUp);
-    }
-
-    public MutableLiveData<ArrayList<Float>> getTouchStart() {
-        return touchStart;
-    }
-
-    public void setTouchStart(ArrayList<Float> touchStart) {
-        this.touchStart.setValue(touchStart);
+    public void setTouch(ArrayList<GlobalValues.Touch> touchStart) {
+        this.touch.setValue(touchStart);
     }
 
     public LiveData<String> getText() {
