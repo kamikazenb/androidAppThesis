@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -44,6 +43,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
+import cz.utb.thesisapp.contentProvider.DbHelper;
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.ui.home.HomeFragment;
@@ -318,13 +318,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     };
 
-
-    public void sendTouchStart(float x, float y) {
+    public void sendTouch(float x, float y, String touchType) {
 
         if (ismBound()) {
             if (mService.kryoClient.isClientsConnected()) {
                 addTimeStamp(x, y);
-                mService.kryoClient.sendTouchStart(x, y);
+                mService.kryoClient.sendTouch(x, y, touchType);
             }
         }
     }
@@ -334,23 +333,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         operation.put(z.hashCode(), new Date(System.currentTimeMillis()));
     }
 
-    public void sendTouchMove(float x, float y) {
 
-        if (ismBound()) {
-            if (mService.kryoClient.isClientsConnected()) {
-                addTimeStamp(x, y);
-                mService.kryoClient.sendTouchMove(x, y);
-            }
-        }
-    }
-
-    public void sendTouchUp(boolean state) {
-        if (ismBound()) {
-            if (mService.kryoClient.isClientsConnected()) {
-                mService.kryoClient.sendTouchUp(state);
-            }
-        }
-    }
 
     public void startKryo(String ip, String userName) {
         if (ismBound()) {

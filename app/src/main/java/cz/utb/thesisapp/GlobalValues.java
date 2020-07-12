@@ -1,5 +1,9 @@
 package cz.utb.thesisapp;
 
+import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_MOVE;
+import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_START;
+import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_UP;
+
 public class GlobalValues {
     //broadcast filters
     public static final String FILTER_KRYO = "kryo";
@@ -8,9 +12,9 @@ public class GlobalValues {
     public static final String FILTER_MAIN_ACTIVITY = "MainActivity";
 
     //broadcast commands a.k.a. intent's extras
-    public static final String EXTRA_TOUCH_START = "TouchStart";
-    public static final String EXTRA_TOUCH_MOVE = "TouchMove";
-    public static final String EXTRA_TOUCH_UP = "TouchUp";
+    public static final String EXTRA_TOUCH_START = TOUCH_START;
+    public static final String EXTRA_TOUCH_MOVE = TOUCH_MOVE;
+    public static final String EXTRA_TOUCH_UP = TOUCH_UP;
     public static final String EXTRA_X = "x";
     public static final String EXTRA_Y = "y";
 

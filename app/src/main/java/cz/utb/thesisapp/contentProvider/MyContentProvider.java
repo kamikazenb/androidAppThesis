@@ -13,8 +13,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import cz.utb.thesisapp.DbHelper;
-
 import static cz.utb.thesisapp.GlobalValues.DB_CLIENT_CREATED;
 import static cz.utb.thesisapp.GlobalValues.DB_TABLE_NAME;
 

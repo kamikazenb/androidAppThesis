@@ -70,18 +70,16 @@ public class KryoClient {
                     Log.d(TAG, "received: ~~if (object instanceof Network.RegisteredUsers) {");
                     NetworkRegisteredUsers(connection, object, client);
                 }
-                if (object instanceof Network.TouchStart) {
-                    broadcast.sendFloats(FILTER_TOUCH, EXTRA_TOUCH_START,
-                            ((Network.TouchStart) object).x, ((Network.TouchStart) object).y);
-                    Log.d(TAG, "received: ~~" + ((Network.TouchStart) object).serverReceived);
-                    service.updateLocalDatabase(((Network.TouchStart) object).clientCreated,
-                            ((Network.TouchStart) object).serverReceived, new Date(System.currentTimeMillis()));
-                }
-                if (object instanceof Network.TouchMove) {
-                    broadcast.sendFloats(FILTER_TOUCH, EXTRA_TOUCH_MOVE,
-                            ((Network.TouchMove) object).x, ((Network.TouchMove) object).y);
-                    service.updateLocalDatabase(((Network.TouchMove) object).clientCreated,
-                            ((Network.TouchMove) object).serverReceived, new Date(System.currentTimeMillis()));
+
+                if (object instanceof Network.Touch) {
+                    broadcast.sendFloats(FILTER_TOUCH, ((Network.Touch) object).touchType,
+                            ((Network.Touch) object).x, ((Network.Touch) object).y);
+                    service.saveToLocalDatabase(((Network.Touch) object).clientCreated,
+                            ((Network.Touch) object).serverReceived,
+                            new Date(System.currentTimeMillis()),
+                            ((Network.Touch) object).x,
+                            ((Network.Touch) object).y,
+                            ((Network.Touch) object).touchType);
                 }
                 if (object instanceof Network.ScreenSize) {
                     broadcast.sendFloats(FILTER_TOUCH, "ScreenSize",
@@ -90,11 +88,7 @@ public class KryoClient {
                 if (object instanceof Network.CleanCanvas) {
                     broadcast.sendValue(FILTER_TOUCH, "CleanCanvas", ((Network.CleanCanvas) object).cleanCanvas);
                 }
-                if (object instanceof Network.TouchUp) {
-                    broadcast.sendValue(FILTER_TOUCH, EXTRA_TOUCH_UP, ((Network.TouchUp) object).touchUp);
-                    service.updateLocalDatabase(((Network.TouchUp) object).clientCreated,
-                            ((Network.TouchUp) object).serverReceived, new Date(System.currentTimeMillis()));
-                }
+
                 if (object instanceof Network.TouchTolerance) {
                     broadcast.sendValue(FILTER_TOUCH, "TouchTolerance", ((Network.TouchTolerance) object).TOUCH_TOLERANCE);
                 }
@@ -230,45 +224,14 @@ public class KryoClient {
         t.start();
     }
 
-    public void sendTouchStart(float x, float y) {
-        Network.TouchStart touch = new Network.TouchStart();
+    public void sendTouch(float x, float y, String touchType) {
+        Network.Touch touch = new Network.Touch();
         touch.x = x;
         touch.y = y;
         touch.clientCreated = new Date(System.currentTimeMillis());
-        service.saveToLocalDatabase(touch.clientCreated, touch.x,
-                touch.y, EXTRA_TOUCH_START);
-        final Network.TouchStart sendTouch = touch;
-        Thread t = new Thread() {
-            public void run() {
-                clientSenderReceiver.sendTCP(sendTouch);
-            }
-        };
-        t.start();
-    }
+        touch.touchType = touchType;
 
-    public void sendTouchMove(float x, float y) {
-        Network.TouchMove touch = new Network.TouchMove();
-        touch.x = x;
-        touch.y = y;
-        touch.clientCreated = new Date(System.currentTimeMillis());
-        service.saveToLocalDatabase(touch.clientCreated, x,
-                y, EXTRA_TOUCH_MOVE);
-        final Network.TouchMove sendTouch = touch;
-        Thread t = new Thread() {
-            public void run() {
-                clientSenderReceiver.sendTCP(sendTouch);
-            }
-        };
-        t.start();
-    }
-
-    public void sendTouchUp(boolean state) {
-        Network.TouchUp touch = new Network.TouchUp();
-        touch.touchUp = state;
-        touch.clientCreated = new Date(System.currentTimeMillis());
-        service.saveToLocalDatabase(touch.clientCreated, (float) 0,
-                (float) 0, EXTRA_TOUCH_UP);
-        final Network.TouchUp sendTouch = touch;
+        final Network.Touch sendTouch = touch;
         Thread t = new Thread() {
             public void run() {
                 clientSenderReceiver.sendTCP(sendTouch);

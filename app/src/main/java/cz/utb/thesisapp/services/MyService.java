@@ -46,7 +46,7 @@ public class MyService extends Service {
      */
     public class MyBinder extends Binder {
 
-       public MyService getService() {
+        public MyService getService() {
             // Return this instance of LocalService so clients can call public methods
             return MyService.this;
         }
@@ -64,22 +64,16 @@ public class MyService extends Service {
         super.onDestroy();
         Log.d(TAG, "onDestroy: called.");
     }
-    public void saveToLocalDatabase(Date created, float x, float y, String touchType) {
+
+    public void saveToLocalDatabase(Date created, Date serverReceived, Date clientReceived, float x, float y, String touchType) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         ContentValues contentValues = new ContentValues();
         contentValues.put(DB_TOUCH_TYPE, touchType);
         contentValues.put(DB_X, x);
         contentValues.put(DB_Y, y);
         contentValues.put(DB_CLIENT_CREATED, dateFormat.format(created));
+        contentValues.put(DB_SERVER_RECEIVED, dateFormat.format(serverReceived));
+        contentValues.put(DB_CLIENT_RECEIVED, dateFormat.format(clientReceived));
         getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
-    }
-    public void updateLocalDatabase(Date created, Date serverReceived, Date clientReceived) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(DB_SERVER_RECEIVED,dateFormat.format(serverReceived));
-        contentValues.put(DB_CLIENT_RECEIVED,dateFormat.format(clientReceived));
-        String selection = DB_CLIENT_CREATED+" LIKE ?";
-        String[] selectionArgs = {dateFormat.format(created)};
-        getContentResolver().update(MyContentProvider.CONTENT_URI, contentValues, selection, selectionArgs);
     }
 }

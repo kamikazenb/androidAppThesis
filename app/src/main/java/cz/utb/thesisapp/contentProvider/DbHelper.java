@@ -1,4 +1,4 @@
-package cz.utb.thesisapp;
+package cz.utb.thesisapp.contentProvider;
 
 import android.content.ContentValues;
 import android.content.Context;

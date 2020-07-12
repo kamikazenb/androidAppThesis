@@ -23,6 +23,10 @@ import java.io.IOException;
 
 import cz.utb.thesisapp.MainActivity;
 
+import static cz.utb.thesisapp.GlobalValues.EXTRA_TOUCH_MOVE;
+import static cz.utb.thesisapp.GlobalValues.EXTRA_TOUCH_START;
+import static cz.utb.thesisapp.GlobalValues.EXTRA_TOUCH_UP;
+
 public class MyDrawingView extends View {
     private boolean thisApp = true;
     private float TOUCH_TOLERANCE = 1;
@@ -167,13 +171,13 @@ public class MyDrawingView extends View {
                     } else {
                         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SCREEN));
                     }
-                    ((MainActivity) act).sendTouchStart(x, y);
+                    ((MainActivity) act).sendTouch(x, y, EXTRA_TOUCH_START);
                     touchStart(x, y);
                     invalidate();
                     break;
                 case MotionEvent.ACTION_MOVE:
                     touchMove(x, y);
-                    ((MainActivity) act).sendTouchMove(x, y);
+                    ((MainActivity) act).sendTouch(x, y, EXTRA_TOUCH_MOVE);
                     if (!drawMode) {
                         path.lineTo(this.x, this.y);
                         path.reset();
@@ -185,7 +189,7 @@ public class MyDrawingView extends View {
                     break;
                 case MotionEvent.ACTION_UP:
                     touchUp();
-                    ((MainActivity) act).sendTouchUp(true);
+                    ((MainActivity) act).sendTouch(0, 0, EXTRA_TOUCH_UP);
                     invalidate();
                     break;
                 default:
