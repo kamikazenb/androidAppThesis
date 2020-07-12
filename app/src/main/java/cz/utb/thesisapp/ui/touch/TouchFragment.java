@@ -58,7 +58,7 @@ public class TouchFragment extends Fragment {
     volatile LineData data;
     volatile int dataSize = 1;
     private Thread thread;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -122,7 +122,14 @@ public class TouchFragment extends Fragment {
             public void onChanged(ArrayList<GlobalValues.Touch> touches) {
                 try {
                     for (GlobalValues.Touch touch : touches) {
-                        Log.d(TAG, "onChanged: ~~" + touch.touchType + " " + touch.clientReceived);
+                        Activity act = getActivity();
+                        if (act instanceof MainActivity) {
+                            Log.d(TAG, "onChanged: ~~" + touch.touchType + "\n"+
+                                    "clientCreated: " + df.format(touch.clientCreated.getTime() + ((MainActivity) act).difference)+ "\n"
+                                  + "serverReceived:" + df.format(touch.serverReceived) + "\n"+
+                                    "clientReceived:" + df.format(touch.clientReceived.getTime() + ((MainActivity) act).difference));
+                        }
+
                         countTime(touch.clientCreated, touch.clientReceived);
                         dvPairedApp.remoteTouchEvent(touch.touchType, touch.x, touch.y);
                     }

@@ -59,7 +59,7 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void setKryoUseDatabase(Boolean kryoUseDatabase) {
-        this.requireRefresh.setValue(kryoUseDatabase);
+        this.kryoUseDatabase.setValue(kryoUseDatabase);
     }
 
     public void setmBounded(Boolean _mBounded) {

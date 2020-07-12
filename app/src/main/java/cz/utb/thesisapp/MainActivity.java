@@ -38,10 +38,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -50,11 +52,13 @@ import java.util.concurrent.TimeUnit;
 import cz.utb.thesisapp.contentProvider.DbHelper;
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
+import cz.utb.thesisapp.services.SNTPClient;
 import cz.utb.thesisapp.services.kryonet.Network;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
 import cz.utb.thesisapp.ui.touch.TouchViewModel;
+import io.github.eterverda.sntp.SNTP;
 
 import android.app.LoaderManager;
 
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private SimpleCursorAdapter dataAdapter;
     private Cursor oldCursor;
     SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+    public long difference = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -347,6 +352,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mService.kryoClient.newClients(ip, userName);
             }
         }
+        Thread t = new Thread() {
+            public void run() {
+                try {
+                    long global = SNTP.currentTimeMillisFromNetwork();
+                    difference = global - System.currentTimeMillis();
+                }catch (IOException e){
+                    Log.d(TAG, "run: ~~"+e);
+                }
+
+            }
+        };
+        t.start();
     }
 
     public void sendRequest(boolean speed, boolean registeredUsers) {
@@ -507,6 +524,27 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         DbHelper dbHelper = new DbHelper(this);
         dbHelper.onUpgrade(dbHelper.getWritableDatabase(), 0, 1);
         getLoaderManager().initLoader(0, null, this);
+        SNTPClient.getDate(Calendar.getInstance().getTimeZone(), new SNTPClient.Listener() {
+            @Override
+            public void onTimeReceived(String rawDate) {
+                // rawDate -> 2019-11-05T17:51:01+0530
+                Log.d(SNTPClient.TAG, "server~~" + rawDate);
+                Log.d(SNTPClient.TAG, "local~~" + dateFormat.format(new Date(System.currentTimeMillis())));
+            }
+
+            @Override
+            public void onError(Exception ex) {
+                Log.e(SNTPClient.TAG, ex.getMessage());
+            }
+        });
+        SNTP.init();
+        Thread t = new Thread() {
+            public void run() {
+                long global = SNTP.safeCurrentTimeMillis();
+                difference = global - System.currentTimeMillis();
+            }
+        };
+        t.start();
     }
 
     @Override

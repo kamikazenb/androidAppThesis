@@ -28,6 +28,7 @@ android {
 allprojects {
     repositories {
         maven { url "https://jitpack.io" }
+        maven { url 'https://raw.githubusercontent.com/eterverda/sntp/m2/' }
     }
 }
 configurations {
@@ -54,4 +55,6 @@ dependencies {
     implementation 'fr.bmartel:jspeedtest:1.31.3'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'com.rethinkdb:rethinkdb-driver:2.3.3'
+
+    implementation 'io.github.eterverda.sntp:sntp:0.1.12'
 }

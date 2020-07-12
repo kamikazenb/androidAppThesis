@@ -112,7 +112,6 @@ public class MyDrawingView extends View {
 
         }
         canvas.drawPath(path, paint);
-//
     }
 
     private void touchUp() {

@@ -109,7 +109,7 @@ public class KryoClient {
             public void run() {
                 try {
                     //195.178.94.66
-                    client.connect(5000, ip, Network.port);
+                    client.connect(10000, ip, Network.port);
                     broadcast.sendValue(FILTER_KRYO, EXTRA_USER_INFO, "connections to kryonet successful");
                     broadcast.sendValue(FILTER_KRYO, EXTRA_COMMAND, EXTRA_COMMAND_SET_CHECKED);
                     clientsConnected = true;
