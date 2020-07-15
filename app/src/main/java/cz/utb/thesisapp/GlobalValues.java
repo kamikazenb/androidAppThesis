@@ -23,9 +23,6 @@ public class GlobalValues {
     public static final String EXTRA_USERS = "users";
     public static final String EXTRA_USER_INFO = "userInfo";
     public static final String EXTRA_CONNECTION_CLOSED = "connectionClosed";
-    public static final String EXTRA_PAIRED = "paired";
-    public static final String EXTRA_UNPAIRED = "unpaired";
-    public static final String EXTRA_ACCEPT_PAIR_REQUEST = "acceptPair";
     public static final String EXTRA_EDIT = "edit";
     public static final String EXTRA_COMMAND = "command";
     public static final String EXTRA_COMMAND_SET_CHECKED = "setChecked";

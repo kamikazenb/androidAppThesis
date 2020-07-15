@@ -49,12 +49,6 @@ public class HomeFragment extends Fragment {
 
         root = inflater.inflate(R.layout.fragment_home, container, false);
 
-        homeViewModel.getPairedName().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                ((TextView) root.findViewById(R.id.tvKryoPairName)).setText(s);
-            }
-        });
         homeViewModel.getKryoUseDatabase().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
@@ -80,18 +74,6 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        homeViewModel.getPaired().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(true);
-                    ((Switch) root.findViewById(R.id.switchSynced)).setClickable(true);
-                } else {
-                    ((Switch) root.findViewById(R.id.switchSynced)).setChecked(false);
-                }
-            }
-        });
-
         homeViewModel.getUsers().observe(getViewLifecycleOwner(), new Observer<HashMap<String, String>>() {
             @Override
             public void onChanged(HashMap<String, String> stringStringHashMap) {
@@ -110,7 +92,7 @@ public class HomeFragment extends Fragment {
             sharedPreferences = PreferenceManager.getDefaultSharedPreferences(act);
             userName = sharedPreferences.getString("userName", "null");
             ipAdress = sharedPreferences.getString("kryoIP", "null");
-            if (userName.equals("null") | ipAdress.equals("null") ) {
+            if (userName.equals("null") | ipAdress.equals("null")) {
                 userName = "Android client";
                 ipAdress = "195.178.94.66";
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -125,7 +107,7 @@ public class HomeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 Activity act = getActivity();
                 if (act instanceof MainActivity) {
-                 ((MainActivity) act).kryoUseDatabase(b);
+                    ((MainActivity) act).kryoUseDatabase(b);
                 }
             }
         });
@@ -146,7 +128,7 @@ public class HomeFragment extends Fragment {
                             if (userName.equals(null) || userName.length() < 1) {
                                 userName = "Android client";
                             }
-                            if(kryoClients.equals(null)){
+                            if (kryoClients.equals(null)) {
                                 ipAdress = "195.178.94.66";
                             }
                             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -160,9 +142,7 @@ public class HomeFragment extends Fragment {
                     if (unboxBool(homeViewModel.getmBounded())) {
                         ((MainActivity) act).stopKryo();
                     }
-                    homeViewModel.setPaired(false);
                     homeViewModel.setUsers(null);
-                    homeViewModel.setPairedname("");
                 }
             }
         });
@@ -177,7 +157,7 @@ public class HomeFragment extends Fragment {
                         if (userName.equals(null) || userName.length() < 1) {
                             userName = "Android client";
                         }
-                        if(kryoClients.equals(null)){
+                        if (kryoClients.equals(null)) {
                             ipAdress = "195.178.94.66";
                         }
                         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -202,7 +182,7 @@ public class HomeFragment extends Fragment {
                     ((TextView) root.findViewById(R.id.tvKryoPairName)).setText("");
                     Activity act = getActivity();
                     if (act instanceof MainActivity) {
-                        ((MainActivity) act).kryoUnpair();
+                        ((MainActivity) act).kryoUnfollow();
                     }
                 }
             }
@@ -235,7 +215,8 @@ public class HomeFragment extends Fragment {
                         try {
                             Activity act = getActivity();
                             if (act instanceof MainActivity) {
-                                ((MainActivity) act).requestPartner(keys.get(position - 1));
+                                Log.d(TAG, "onItemSelected: ~~" + keys.get(position - 1));
+                                ((MainActivity) act).kryoRequestFollow(keys.get(position - 1));
                             }
                         } catch (Exception e) {
                         }

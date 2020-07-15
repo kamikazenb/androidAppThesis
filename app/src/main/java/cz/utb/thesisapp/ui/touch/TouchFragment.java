@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -33,9 +32,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import cz.utb.thesisapp.Event;
 import cz.utb.thesisapp.GlobalValues;
 import cz.utb.thesisapp.MainActivity;
 import cz.utb.thesisapp.R;
@@ -46,7 +45,7 @@ public class TouchFragment extends Fragment {
     private InfoViewModel infoViewModel;
     private TouchViewModel touchViewModel;
     MyDrawingView dvThisApp;
-    MyDrawingView dvPairedApp;
+    MyDrawingView dvRemoteApp;
     private Paint mPaint;
     View root;
     private LineChart mChart;
@@ -80,11 +79,10 @@ public class TouchFragment extends Fragment {
         }
 
         if (act instanceof MainActivity) {
-            dvPairedApp = (MyDrawingView) root.findViewById(R.id.scratch_pad_partner);
-            dvPairedApp.setThisApp(false);
-            int color = ContextCompat.getColor(act, R.color.colorPrimary);
-            dvPairedApp.paint.setColor(color);
-            dvPairedApp.act = act;
+            dvRemoteApp = (MyDrawingView) root.findViewById(R.id.scratch_pad_partner);
+            dvRemoteApp.setThisApp(false);
+            dvRemoteApp.paint.setColor(ContextCompat.getColor(act, R.color.colorPrimary));
+            dvRemoteApp.act = act;
 
             LocalBroadcastManager.getInstance(act).registerReceiver(mReceiver, new IntentFilter("touch"));
             LocalBroadcastManager.getInstance(act).registerReceiver(maReiver, new IntentFilter("MainActivity"));
@@ -124,14 +122,14 @@ public class TouchFragment extends Fragment {
                     for (GlobalValues.Touch touch : touches) {
                         Activity act = getActivity();
                         if (act instanceof MainActivity) {
-                            Log.d(TAG, "onChanged: ~~" + touch.touchType + "\n"+
-                                    "clientCreated: " + df.format(touch.clientCreated.getTime() + ((MainActivity) act).difference)+ "\n"
-                                  + "serverReceived:" + df.format(touch.serverReceived) + "\n"+
+                            Log.d(TAG, "onChanged: ~~" + touch.touchType + "\n" +
+                                    "clientCreated: " + df.format(touch.clientCreated.getTime() + ((MainActivity) act).difference) + "\n"
+                                    + "serverReceived:" + df.format(touch.serverReceived) + "\n" +
                                     "clientReceived:" + df.format(touch.clientReceived.getTime() + ((MainActivity) act).difference));
                         }
 
                         countTime(touch.clientCreated, touch.clientReceived);
-                        dvPairedApp.remoteTouchEvent(touch.touchType, touch.x, touch.y);
+                        dvRemoteApp.remoteTouchEvent(touch.touchType, touch.x, touch.y);
                     }
                 } catch (Exception e) {
                     Log.d(TAG, "onChanged: ~~" + e);
@@ -147,20 +145,32 @@ public class TouchFragment extends Fragment {
         if (thread != null) {
             thread.interrupt();
         }
-        thread = new Thread(new Runnable() {
+
+        thread = new Thread() {
             @Override
             public void run() {
-                while (true) {
-                    try {
-                        plot();
-                        Thread.sleep(150);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                synchronized (this) {
+                    while (true) {
+                        try {
+                            Thread.sleep(150);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            (getActivity()).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    plot();
+                                }
+                            });
+                        }catch (NullPointerException e){
+                            Log.d(TAG, "run: ~~"+e);
+                        }
+
                     }
                 }
             }
-        });
+        };
         thread.start();
     }
 
@@ -217,7 +227,7 @@ public class TouchFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent i) {
             if (i.hasExtra("refresh")) {
-                dvPairedApp.clear();
+                dvRemoteApp.clear();
                 dvThisApp.clear();
             }
         }

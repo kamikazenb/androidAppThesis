@@ -167,40 +167,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         this.mBound = mBound;
     }
 
-    private void showAlertDialog(String showDialog, final String tokenSeeker,
-                                 final String service) {
-        AlertDialog.Builder aletBuilder = new AlertDialog.Builder(context);
-        aletBuilder.setMessage(showDialog);
-        aletBuilder.setCancelable(false);
-        aletBuilder.setPositiveButton(
-                "Accept",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        if (service.equals("kryo")) {
-                            mService.kryoClient.sendPairAcceptationResult(tokenSeeker, true);
-                        }
-                        dialog.cancel();
-                    }
-                });
-        aletBuilder.setNegativeButton(
-                "Decline",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        if (service.equals("kryo")) {
-                            mService.kryoClient.unPair();
-                        }
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog alert11 = aletBuilder.create();
-        try {
-            alert11.show();
-        } catch (Exception e) {
-            Log.d(TAG, "onClick: ~~" + e);
-        }
-
-    }
 
     private final BroadcastReceiver infoReceiver = new BroadcastReceiver() {
 
@@ -272,14 +238,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(EXTRA_PAIRED)) {
-                try {
-                    homeViewModel.setPairedname(intent.getStringExtra(EXTRA_PAIRED));
-                    homeViewModel.setPaired(true);
-                } catch (Exception e) {
 
-                }
-            }
             if (intent.hasExtra(EXTRA_KROYSERVER_USE_DATABASE)) {
                 try {
                     homeViewModel.setKryoUseDatabase(intent.getBooleanExtra(EXTRA_KROYSERVER_USE_DATABASE, true));
@@ -287,14 +246,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 }
             }
-            if (intent.hasExtra(EXTRA_UNPAIRED)) {
-                try {
-                    homeViewModel.setPaired(false);
-                    homeViewModel.setPairedname(intent.getStringExtra(""));
-                } catch (Exception e) {
 
-                }
-            }
             if (intent.hasExtra(EXTRA_COMMAND)) {
                 if (intent.getStringExtra(EXTRA_COMMAND).equals(EXTRA_COMMAND_SET_CHECKED)) {
                     homeViewModel.setKryoConnected(true);
@@ -312,11 +264,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 }
             }
-            if (intent.hasExtra(EXTRA_ACCEPT_PAIR_REQUEST)) {
-                HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("acceptPair");
-                showAlertDialog("Do you accept sync with: \n \n" + hashMap.values().toArray()[0].toString(),
-                        hashMap.keySet().toArray()[0].toString(), "kryo");
-            }
 
             if (intent.hasExtra(EXTRA_CONNECTION_CLOSED)) {
                 homeViewModel.setKryoConnected(false);
@@ -329,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void sendTouch(float x, float y, String touchType) {
 
         if (ismBound()) {
-            if (mService.kryoClient.isClientsConnected()) {
+            if (mService.kryoClient.isClientConnected()) {
                 addTimeStamp(x, y);
                 mService.kryoClient.sendTouch(x, y, touchType);
             } else if(mService.webServicesSelected){
@@ -347,8 +294,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void startKryo(String ip, String userName) {
         if (ismBound()) {
-            if (!mService.kryoClient.isClientsConnected()) {
-                mService.kryoClient.newClients(ip, userName);
+            if (!mService.kryoClient.isClientConnected()) {
+                mService.kryoClient.newClient(ip, userName);
             }
         }
         Thread t = new Thread() {
@@ -365,18 +312,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         t.start();
     }
 
-    public void sendRequest(boolean speed, boolean registeredUsers) {
-        if (ismBound()) {
-            if (mService.kryoClient.isClientsConnected()) {
-                mService.kryoClient.sendRequest(speed, registeredUsers);
-            }
-        }
-    }
-
     public void stopKryo() {
         if (ismBound()) {
-            if (mService.kryoClient.isClientsConnected()) {
-                mService.kryoClient.stopClients();
+            if (mService.kryoClient.isClientConnected()) {
+                mService.kryoClient.stopClient();
             }
         }
     }
@@ -397,18 +336,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    public void requestPartner(String token) {
+
+    public void kryoUnfollow() {
         if (ismBound()) {
-            if (mService.kryoClient.isClientsConnected()) {
-                mService.kryoClient.requestPartner(token);
+            if (mService.kryoClient.isClientConnected()) {
+                mService.kryoClient.unFollow();
             }
         }
     }
-
-    public void kryoUnpair() {
+    public void kryoRequestFollow(String token){
         if (ismBound()) {
-            if (mService.kryoClient.isClientsConnected()) {
-                mService.kryoClient.unPair();
+            if (mService.kryoClient.isClientConnected()) {
+                mService.kryoClient.requestFollow(token);
             }
         }
     }
@@ -417,10 +356,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (ismBound()) {
             mService.kryoClient.sendUseDatabase(bool);
         }
-    }
-
-    public void kryoPairResponse(String seekerToken, boolean response) {
-        mService.kryoClient.sendPairAcceptationResult(seekerToken, response);
     }
 
     private void startService() {

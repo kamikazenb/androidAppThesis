@@ -8,11 +8,9 @@ import java.util.HashMap;
 
 public class HomeViewModel extends ViewModel {
     private static final String TAG = "HomeViewModel";
-    private MutableLiveData<String> pairedname = new MutableLiveData<>();
     private MutableLiveData<Boolean> mBounded = new MutableLiveData<>();
     private MutableLiveData<Boolean> requireRefresh = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoConnected = new MutableLiveData<>();
-    private MutableLiveData<Boolean> paired = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoUseDatabase = new MutableLiveData<>();
     private MutableLiveData<HashMap<String, String>> users = new MutableLiveData<>();
 
@@ -23,13 +21,6 @@ public class HomeViewModel extends ViewModel {
         kryoUseDatabase.setValue(true);
     }
 
-    public MutableLiveData<Boolean> getPaired() {
-        return paired;
-    }
-
-    public void setPaired(Boolean paired) {
-        this.paired.setValue(paired);
-    }
 
     public MutableLiveData<Boolean> getKryoConnected() {
         return kryoConnected;
@@ -69,12 +60,5 @@ public class HomeViewModel extends ViewModel {
         return mBounded;
     }
 
-    public void setPairedname(String _mText) {
-        pairedname.setValue(_mText);
-    }
-
-    public LiveData<String> getPairedName() {
-        return pairedname;
-    }
 
 }

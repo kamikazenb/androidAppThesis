@@ -172,7 +172,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="right"
                 android:paddingVertical="20dp"
-                android:text="Device to sync"
+                android:text="Device to follow"
                 app:layout_constraintEnd_toStartOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv2.5" />
@@ -194,7 +194,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:paddingVertical="20dp"
-                android:text="Synchronized to"
+                android:text="Following"
                 app:layout_constraintEnd_toStartOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv3" />

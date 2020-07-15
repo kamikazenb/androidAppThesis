@@ -11,6 +11,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
 
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -43,6 +44,7 @@ public class MyDrawingView extends View {
     private float eraserSize = 10;
     private TextView tv;
     private static final String TAG = "MyDrawingView";
+    private int canvasH, canvasW;
 
     public MyDrawingView(Context c) {
         this(c, null);
@@ -79,6 +81,8 @@ public class MyDrawingView extends View {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        canvasW = w;
+        canvasH = h;
         super.onSizeChanged(w, h, oldw, oldh);
         if (bitmap == null) {
             bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -127,6 +131,8 @@ public class MyDrawingView extends View {
     }
 
     public void remoteTouchEvent(String action, float x, float y) {
+        x = x*canvasW;
+        y = y*canvasH;
         switch (action) {
             case EXTRA_TOUCH_START:
                 if (!drawMode) {
@@ -168,13 +174,13 @@ public class MyDrawingView extends View {
                     } else {
                         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SCREEN));
                     }
-                    ((MainActivity) act).sendTouch(x, y, EXTRA_TOUCH_START);
+                    ((MainActivity) act).sendTouch(x/canvasW, y/canvasH, EXTRA_TOUCH_START);
                     touchStart(x, y);
                     invalidate();
                     break;
                 case MotionEvent.ACTION_MOVE:
                     touchMove(x, y);
-                    ((MainActivity) act).sendTouch(x, y, EXTRA_TOUCH_MOVE);
+                    ((MainActivity) act).sendTouch(x/canvasW, y/canvasH, EXTRA_TOUCH_MOVE);
                     if (!drawMode) {
                         path.lineTo(this.x, this.y);
                         path.reset();
