@@ -11,8 +11,6 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -39,7 +37,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import java.io.IOException;
-import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,7 +50,6 @@ import cz.utb.thesisapp.contentProvider.DbHelper;
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.services.SNTPClient;
-import cz.utb.thesisapp.services.kryonet.Network;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
@@ -336,6 +332,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (mService.kryoClient.isClientsConnected()) {
                 addTimeStamp(x, y);
                 mService.kryoClient.sendTouch(x, y, touchType);
+            } else if(mService.webServicesSelected){
+                addTimeStamp(x, y);
+                mService.restApi.sendTouch(x, y, touchType);
             }
         }
     }
@@ -357,8 +356,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 try {
                     long global = SNTP.currentTimeMillisFromNetwork();
                     difference = global - System.currentTimeMillis();
-                }catch (IOException e){
-                    Log.d(TAG, "run: ~~"+e);
+                } catch (IOException e) {
+                    Log.d(TAG, "run: ~~" + e);
                 }
 
             }
@@ -379,6 +378,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (mService.kryoClient.isClientsConnected()) {
                 mService.kryoClient.stopClients();
             }
+        }
+    }
+
+    public void startWebServices(String ip) {
+        if (ismBound()) {
+            mService.webServicesSelected = true;
+            mService.sse.start(ip);
+            mService.restApi.startRestApi(ip);
+        }
+    }
+
+    public void stopWebServices() {
+        if (ismBound()) {
+            mService.webServicesSelected = false;
+            mService.sse.stop();
+            mService.restApi.stop();
         }
     }
 
@@ -545,6 +560,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         };
         t.start();
+
     }
 
     @Override

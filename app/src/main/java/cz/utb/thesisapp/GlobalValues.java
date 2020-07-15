@@ -58,4 +58,7 @@ public class GlobalValues {
          public Date serverReceived;
          public Date clientReceived;
     }
+
+    public static final String API_URL = "8080/api/v1/touch";
+     public static final String API_SSE = "/stream-sse";
 }

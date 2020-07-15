@@ -11,6 +11,8 @@ import android.util.Log;
 
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.kryonet.KryoClient;
+import cz.utb.thesisapp.services.webServices.RestApi;
+import cz.utb.thesisapp.services.webServices.Sse;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,7 +35,10 @@ public class MyService extends Service {
     private final Random mGenerator = new Random();
     public Broadcast broadcast = new Broadcast(this);
     public KryoClient kryoClient = new KryoClient(broadcast, this);
+    public Sse sse = new Sse();
     public SpeedTest speedTest = new SpeedTest(broadcast);
+    public RestApi restApi = new RestApi(this);
+    public boolean webServicesSelected = false;
 
     @Override
     public IBinder onBind(Intent intent) {

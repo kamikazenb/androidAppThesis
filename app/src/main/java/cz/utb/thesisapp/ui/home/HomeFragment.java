@@ -1,10 +1,6 @@
 package cz.utb.thesisapp.ui.home;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -26,7 +22,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +35,7 @@ public class HomeFragment extends Fragment {
     private HashMap<String, String> kryoClients = new HashMap<>();
     View root;
     String userName;
-    String kryoIP;
+    String ipAdress;
     SharedPreferences sharedPreferences;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -71,7 +66,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean) {
-                    ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(false);
+                    ((Switch) root.findViewById(R.id.sKryoConnected)).setChecked(false);
                     homeViewModel.setRequireRefresh(false);
                 }
             }
@@ -80,7 +75,7 @@ public class HomeFragment extends Fragment {
         homeViewModel.getKryoConnected().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
-                ((Switch) root.findViewById(R.id.sKryoIP)).setChecked(aBoolean);
+                ((Switch) root.findViewById(R.id.sKryoConnected)).setChecked(aBoolean);
                 ((Switch) root.findViewById(R.id.sKryoDB)).setClickable(aBoolean);
             }
         });
@@ -114,13 +109,13 @@ public class HomeFragment extends Fragment {
         if (act instanceof MainActivity) {
             sharedPreferences = PreferenceManager.getDefaultSharedPreferences(act);
             userName = sharedPreferences.getString("userName", "null");
-            kryoIP = sharedPreferences.getString("kryoIP", "null");
-            if (userName.equals("null") | kryoIP.equals("null") ) {
+            ipAdress = sharedPreferences.getString("kryoIP", "null");
+            if (userName.equals("null") | ipAdress.equals("null") ) {
                 userName = "Android client";
-                kryoIP = "195.178.94.66";
+                ipAdress = "195.178.94.66";
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("userName", userName);
-                editor.putString("kryoIP", kryoIP);
+                editor.putString("kryoIP", ipAdress);
                 editor.apply();
             }
         }
@@ -136,32 +131,31 @@ public class HomeFragment extends Fragment {
         });
 
         ((EditText) root.findViewById(R.id.etUserName)).setText(userName);
-        ((EditText) root.findViewById(R.id.etKryoIP)).setText(kryoIP);
+        ((EditText) root.findViewById(R.id.etIP)).setText(ipAdress);
 
-        ((Switch) root.findViewById(R.id.sKryoIP)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        ((Switch) root.findViewById(R.id.sKryoConnected)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Activity act = getActivity();
                 if (isChecked) {
+                    ((Switch) root.findViewById(R.id.sSpringConnected)).setChecked(false);
                     if (act instanceof MainActivity) {
                         if (unboxBool(homeViewModel.getmBounded())) {
                             Log.d(TAG, "onClick: ~~");
-                            kryoIP = ((EditText) root.findViewById(R.id.etKryoIP)).getText().toString();
+                            ipAdress = ((EditText) root.findViewById(R.id.etIP)).getText().toString();
                             userName = ((EditText) root.findViewById(R.id.etUserName)).getText().toString();
                             if (userName.equals(null) || userName.length() < 1) {
                                 userName = "Android client";
                             }
                             if(kryoClients.equals(null)){
-                                kryoIP = "195.178.94.66";
+                                ipAdress = "195.178.94.66";
                             }
                             SharedPreferences.Editor editor = sharedPreferences.edit();
                             editor.putString("userName", userName);
-                            editor.putString("kryoIP", kryoIP);
+                            editor.putString("kryoIP", ipAdress);
                             editor.apply();
-                            ((MainActivity) act).startKryo(kryoIP, userName);
-
+                            ((MainActivity) act).startKryo(ipAdress, userName);
                         }
                     }
-
                 } else {
                     if (unboxBool(homeViewModel.getmBounded())) {
                         ((MainActivity) act).stopKryo();
@@ -169,6 +163,33 @@ public class HomeFragment extends Fragment {
                     homeViewModel.setPaired(false);
                     homeViewModel.setUsers(null);
                     homeViewModel.setPairedname("");
+                }
+            }
+        });
+        ((Switch) root.findViewById(R.id.sSpringConnected)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Activity act = getActivity();
+                if (isChecked) {
+                    ((Switch) root.findViewById(R.id.sKryoConnected)).setChecked(false);
+                    if (act instanceof MainActivity) {
+                        ipAdress = ((EditText) root.findViewById(R.id.etIP)).getText().toString();
+                        userName = ((EditText) root.findViewById(R.id.etUserName)).getText().toString();
+                        if (userName.equals(null) || userName.length() < 1) {
+                            userName = "Android client";
+                        }
+                        if(kryoClients.equals(null)){
+                            ipAdress = "195.178.94.66";
+                        }
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("userName", userName);
+                        editor.putString("kryoIP", ipAdress);
+                        editor.apply();
+                        ((MainActivity) act).startWebServices(ipAdress);
+                    }
+                } else {
+                    if (act instanceof MainActivity) {
+                        ((MainActivity) act).stopWebServices();
+                    }
                 }
             }
         });

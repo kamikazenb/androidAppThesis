@@ -66,14 +66,36 @@
                 app:layout_constraintStart_toEndOf="@id/guideLeft2"
                 app:layout_constraintTop_toTopOf="@id/tv1" />
 
+            <TextView
+                android:id="@+id/tv1.1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:paddingVertical="20dp"
+                android:text="IP address"
+                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv1" />
+
+            <EditText
+                android:id="@+id/etIP"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:text="195.178.94.66"
+                android:textColorHint="#000000"
+                app:layout_constraintBottom_toBottomOf="@id/tv1.1"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guideLeft2"
+                app:layout_constraintTop_toTopOf="@id/tv1.1" />
+
             <View
                 android:id="@+id/divider"
                 android:layout_width="0dp"
-                android:layout_height="2dp"
+                android:layout_height="4dp"
                 android:background="?android:attr/listDivider"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tv1"
+                app:layout_constraintTop_toBottomOf="@+id/tv1.1"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="46dp" />
 
@@ -94,25 +116,14 @@
                 android:layout_height="wrap_content"
                 android:gravity="right"
                 android:paddingVertical="20dp"
-                android:text="IP"
-                app:layout_constraintBottom_toBottomOf="@id/etKryoIP"
+                android:text="@string/connected"
                 app:layout_constraintEnd_toStartOf="@id/guideLeft1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/ivKryonet" />
+                app:layout_constraintTop_toBottomOf="@id/ivKryonet"/>
 
-            <EditText
-                android:id="@+id/etKryoIP"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:text="195.178.94.66"
-                android:textColorHint="#000000"
-                app:layout_constraintBottom_toBottomOf="@id/tv2"
-                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintStart_toStartOf="@id/guideLeft2"
-                app:layout_constraintTop_toTopOf="@id/tv2" />
 
             <Switch
-                android:id="@+id/sKryoIP"
+                android:id="@+id/sKryoConnected"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="false"
@@ -210,6 +221,51 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
                 app:layout_constraintTop_toBottomOf="@id/tv3" />
+
+            <View
+                android:id="@+id/divider1"
+                android:layout_width="0dp"
+                android:layout_height="4dp"
+                android:background="?android:attr/listDivider"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv4"
+                tools:layout_editor_absoluteX="1dp"
+                tools:layout_editor_absoluteY="46dp" />
+
+            <ImageView
+                android:id="@+id/ivSpring"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/springboot"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guideFarLeft"
+                app:layout_constraintTop_toBottomOf="@id/divider1" />
+
+            <TextView
+                android:id="@+id/tv5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:paddingVertical="20dp"
+                android:text="@string/connected"
+                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ivSpring" />
+
+            <Switch
+                android:id="@+id/sSpringConnected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:foregroundGravity="center"
+                app:layout_constraintBottom_toBottomOf="@id/tv5"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guidelineRight"
+                app:layout_constraintTop_toTopOf="@id/tv5" />
+
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

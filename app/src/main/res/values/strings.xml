@@ -13,4 +13,5 @@
 
     <string name="home_second">Home Second</string>
     <string name="refresh">refresh</string>
+    <string name="connected">Connected</string>
 </resources>
