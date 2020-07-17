@@ -50,6 +50,7 @@ import cz.utb.thesisapp.contentProvider.DbHelper;
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.services.SNTPClient;
+import cz.utb.thesisapp.services.TokenGenerator;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private Cursor oldCursor;
     SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
     public long difference = 0;
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,11 +169,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         this.mBound = mBound;
     }
 
+    private final BroadcastReceiver webReceiver = new BroadcastReceiver() {
 
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra(EXTRA_CONNECTION_CLOSED)) {
+               homeViewModel.setWebConnected(false);
+                Toast.makeText(getApplicationContext(), intent.getExtras().getString(EXTRA_CONNECTION_CLOSED), Toast.LENGTH_SHORT).show();
+                stopWebServices();
+            }
+
+        }
+    };
     private final BroadcastReceiver infoReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra(EXTRA_USER_INFO)){
+                Toast.makeText(getApplicationContext(), intent.getExtras().getString(EXTRA_USER_INFO), Toast.LENGTH_SHORT).show();
+            }
             if (intent.hasExtra(EXTRA_DOWNLOAD)) {
                 Entry entry = new Entry(getTime(),
                         (intent.getFloatExtra(EXTRA_DOWNLOAD, 0)) * 100);
@@ -279,9 +295,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (mService.kryoClient.isClientConnected()) {
                 addTimeStamp(x, y);
                 mService.kryoClient.sendTouch(x, y, touchType);
-            } else if(mService.webServicesSelected){
+            } else if (mService.webServicesSelected) {
                 addTimeStamp(x, y);
-                mService.restApi.sendTouch(x, y, touchType);
+                mService.restApi.sendTouch(x, y, touchType, token);
             }
         }
     }
@@ -320,11 +336,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    public void startWebServices(String ip) {
+    public void startWebServices(String ip, String name) {
         if (ismBound()) {
             mService.webServicesSelected = true;
-            mService.sse.start(ip);
-            mService.restApi.startRestApi(ip);
+            TokenGenerator tg = new TokenGenerator();
+            token = tg.generateRandom(20);
+            mService.sse.start(ip, token);
+            mService.restApi.startRestApi(ip, name, token);
         }
     }
 
@@ -344,7 +362,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         }
     }
-    public void kryoRequestFollow(String token){
+
+    public void kryoRequestFollow(String token) {
         if (ismBound()) {
             if (mService.kryoClient.isClientConnected()) {
                 mService.kryoClient.requestFollow(token);
@@ -440,6 +459,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onResume() {
         LocalBroadcastManager.getInstance(this).registerReceiver(kryoReceiver, new IntentFilter(FILTER_KRYO));
         LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter(FILTER_INFO));
+        LocalBroadcastManager.getInstance(this).registerReceiver(webReceiver, new IntentFilter(FILTER_WEB));
 //        LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter(FILTER_TOUCH));
         startService();
         Log.d(TAG, "onResume: ~~");

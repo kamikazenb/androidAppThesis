@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
+import static cz.utb.thesisapp.GlobalValues.DATE_FORMAT;
 import static cz.utb.thesisapp.GlobalValues.DB_CLIENT_CREATED;
 import static cz.utb.thesisapp.GlobalValues.DB_CLIENT_RECEIVED;
 import static cz.utb.thesisapp.GlobalValues.DB_SERVER_RECEIVED;
@@ -35,9 +36,9 @@ public class MyService extends Service {
     private final Random mGenerator = new Random();
     public Broadcast broadcast = new Broadcast(this);
     public KryoClient kryoClient = new KryoClient(broadcast, this);
-    public Sse sse = new Sse();
+    public Sse sse = new Sse(this, broadcast);
     public SpeedTest speedTest = new SpeedTest(broadcast);
-    public RestApi restApi = new RestApi(this);
+    public RestApi restApi = new RestApi(this, broadcast);
     public boolean webServicesSelected = false;
 
     @Override
@@ -71,7 +72,7 @@ public class MyService extends Service {
     }
 
     public void saveToLocalDatabase(Date created, Date serverReceived, Date clientReceived, float x, float y, String touchType) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
         ContentValues contentValues = new ContentValues();
         contentValues.put(DB_TOUCH_TYPE, touchType);
         contentValues.put(DB_X, x);

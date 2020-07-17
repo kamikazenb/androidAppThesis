@@ -11,6 +11,7 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<Boolean> mBounded = new MutableLiveData<>();
     private MutableLiveData<Boolean> requireRefresh = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoConnected = new MutableLiveData<>();
+    private MutableLiveData<Boolean> webConnected = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoUseDatabase = new MutableLiveData<>();
     private MutableLiveData<HashMap<String, String>> users = new MutableLiveData<>();
 
@@ -19,6 +20,7 @@ public class HomeViewModel extends ViewModel {
         requireRefresh.setValue(false);
         kryoConnected.setValue(false);
         kryoUseDatabase.setValue(true);
+        webConnected.setValue(false);
     }
 
 
@@ -28,6 +30,13 @@ public class HomeViewModel extends ViewModel {
 
     public void setKryoConnected(Boolean kryoConnected) {
         this.kryoConnected.setValue(kryoConnected);
+    }
+    public MutableLiveData<Boolean> getWebConnected() {
+        return webConnected;
+    }
+
+    public void setWebConnected(Boolean webConnected) {
+        this.webConnected.setValue(webConnected);
     }
 
     public MutableLiveData<HashMap<String, String>> getUsers() {

@@ -14,7 +14,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:paddingBottom="150dp">
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideFarLeft"
@@ -265,8 +266,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
                 app:layout_constraintTop_toTopOf="@id/tv5" />
-
-
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

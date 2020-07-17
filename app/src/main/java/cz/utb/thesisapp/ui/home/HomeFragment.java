@@ -73,7 +73,13 @@ public class HomeFragment extends Fragment {
                 ((Switch) root.findViewById(R.id.sKryoDB)).setClickable(aBoolean);
             }
         });
+        homeViewModel.getWebConnected().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                ((Switch) root.findViewById(R.id.sSpringConnected)).setChecked(aBoolean);
 
+            }
+        });
         homeViewModel.getUsers().observe(getViewLifecycleOwner(), new Observer<HashMap<String, String>>() {
             @Override
             public void onChanged(HashMap<String, String> stringStringHashMap) {
@@ -164,7 +170,8 @@ public class HomeFragment extends Fragment {
                         editor.putString("userName", userName);
                         editor.putString("kryoIP", ipAdress);
                         editor.apply();
-                        ((MainActivity) act).startWebServices(ipAdress);
+                        homeViewModel.setWebConnected(true);
+                        ((MainActivity) act).startWebServices(ipAdress, userName);
                     }
                 } else {
                     if (act instanceof MainActivity) {

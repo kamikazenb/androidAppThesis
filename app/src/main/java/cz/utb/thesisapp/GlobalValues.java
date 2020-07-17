@@ -11,6 +11,7 @@ public class GlobalValues {
     public static final String FILTER_KRYO = "kryo";
     public static final String FILTER_INFO = "info";
     public static final String FILTER_TOUCH = "touch";
+    public static final String FILTER_WEB = "web";
     public static final String FILTER_MAIN_ACTIVITY = "MainActivity";
 
     //broadcast commands a.k.a. intent's extras
@@ -45,17 +46,20 @@ public class GlobalValues {
     public static final String DB_SERVER_RECEIVED = "serverReceived";
     public static final String DB_CLIENT_RECEIVED = "clientReceived";
 
-    public static final String DATE_FORMAT ="yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
-     static public class Touch {
-         public float x;
-         public float y;
-         public String touchType;
-         public Date clientCreated;
-         public Date serverReceived;
-         public Date clientReceived;
+    static public class Touch {
+        public float x;
+        public float y;
+        public String touchType;
+        public Date clientCreated;
+        public Date serverReceived;
+        public Date clientReceived;
     }
 
-    public static final String API_URL = "8080/api/v1/touch";
-     public static final String API_SSE = "/stream-sse";
+    public static final String API_PORT = ":8080";
+    public static final String API_REST = "/rest";
+    public static final String API_CLIENT = "/client";
+    public static final String API_TOUCH = "/touch";
+    public static final String API_SSE = "/sse";
 }

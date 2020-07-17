@@ -56,6 +56,7 @@ public class TouchFragment extends Fragment {
     volatile ArrayList<ILineDataSet> dataSets;
     volatile LineData data;
     volatile int dataSize = 1;
+    boolean threadRun = true;
     private Thread thread;
     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
@@ -122,10 +123,10 @@ public class TouchFragment extends Fragment {
                     for (GlobalValues.Touch touch : touches) {
                         Activity act = getActivity();
                         if (act instanceof MainActivity) {
-                            Log.d(TAG, "onChanged: ~~" + touch.touchType + "\n" +
+                           /* Log.d(TAG, "onChanged: ~~" + touch.touchType + "\n" +
                                     "clientCreated: " + df.format(touch.clientCreated.getTime() + ((MainActivity) act).difference) + "\n"
                                     + "serverReceived:" + df.format(touch.serverReceived) + "\n" +
-                                    "clientReceived:" + df.format(touch.clientReceived.getTime() + ((MainActivity) act).difference));
+                                    "clientReceived:" + df.format(touch.clientReceived.getTime() + ((MainActivity) act).difference));*/
                         }
 
                         countTime(touch.clientCreated, touch.clientReceived);
@@ -146,31 +147,26 @@ public class TouchFragment extends Fragment {
             thread.interrupt();
         }
 
-        thread = new Thread() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 synchronized (this) {
                     while (true) {
                         try {
                             Thread.sleep(150);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        try {
                             (getActivity()).runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     plot();
                                 }
                             });
-                        }catch (NullPointerException e){
-                            Log.d(TAG, "run: ~~"+e);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-
                     }
                 }
             }
-        };
+        }) ;
         thread.start();
     }
 

@@ -8,47 +8,72 @@ import com.here.oksse.ServerSentEvent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import cz.utb.thesisapp.GlobalValues;
+import cz.utb.thesisapp.services.Broadcast;
+import cz.utb.thesisapp.services.MyService;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import static cz.utb.thesisapp.GlobalValues.API_SSE;
-import static cz.utb.thesisapp.GlobalValues.API_URL;
+import static cz.utb.thesisapp.GlobalValues.API_PORT;
+import static cz.utb.thesisapp.GlobalValues.EXTRA_USER_INFO;
+import static cz.utb.thesisapp.GlobalValues.FILTER_INFO;
 
 public class Sse {
     private static final String TAG = "SSE";
     private Request request;
     private OkSse okSse;
     private ServerSentEvent sse;
+    private MyService myService;
+    private Broadcast broadcast;
+    SimpleDateFormat df = new SimpleDateFormat(GlobalValues.DATE_FORMAT);
+
+
     ServerSentEvent.Listener listener = new ServerSentEvent.Listener() {
         @Override
         public void onOpen(ServerSentEvent sse, Response response) {
             Log.d(TAG, "onOpen: ~~");
+            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onOpen");
         }
 
         @Override
         public void onMessage(ServerSentEvent sse, String id, String event, String message) {
-//            Log.d(TAG, "onMessage: ~~%" + message);
             try {
-                JSONObject jsonObject = new JSONObject("message");
-            } catch (JSONException e) {
+                JSONObject jo = new JSONObject(message);
+                myService.saveToLocalDatabase(
+                        df.parse(jo.getString("clientCreated")),
+                        df.parse(jo.getString("serverReceived")),
+                        new Date(System.currentTimeMillis()),
+                        (float) jo.getDouble("x"),
+                        (float) jo.getDouble("y"),
+                        jo.getString("touchType")
+                );
+
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
 
         @Override
         public void onComment(ServerSentEvent sse, String comment) {
+            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onComment");
             Log.d(TAG, "onComment: ~~");
         }
 
         @Override
         public boolean onRetryTime(ServerSentEvent sse, long milliseconds) {
+            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onRetryTime");
             Log.d(TAG, "onRetryTime: ~~");
             return false;
         }
 
         @Override
         public boolean onRetryError(ServerSentEvent sse, Throwable throwable, Response response) {
+            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onRetryError");
             Log.d(TAG, "onRetryError: ~~" + throwable);
             return false;
         }
@@ -56,25 +81,31 @@ public class Sse {
         @Override
         public void onClosed(ServerSentEvent sse) {
             Log.d(TAG, "onClosed: ~~");
+            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onClosed");
+//             broadcast.sendValue(FILTER_WEB, EXTRA_CONNECTION_CLOSED, "Connection to webservices NA");
         }
 
         @Override
         public Request onPreRetry(ServerSentEvent sse, Request originalRequest) {
+            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onPreRetry");
             Log.d(TAG, "onPreRetry: ~~");
             return null;
         }
     };
 
-    public Sse() {
-
+    public Sse(MyService myService, Broadcast broadcast) {
+        this.broadcast = broadcast;
+        this.myService = myService;
     }
 
-    public void start(String ipAddress) {
-        request = new Request.Builder().url("http://"+ipAddress+":"+ API_URL + ""+API_SSE).build();
+
+    public void start(String ipAddress, String token) {
+        request = new Request.Builder().url("http://" + ipAddress + API_PORT + API_SSE + "/" + token).build();
         okSse = new OkSse();
+        Log.d(TAG, "start: ~~startSSE");
         Thread t = new Thread() {
             public void run() {
-                  sse = okSse.newServerSentEvent(request, listener);
+                sse = okSse.newServerSentEvent(request, listener);
             }
         };
         t.start();
