@@ -15,7 +15,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="150dp">
+            android:paddingBottom="80dp">
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideFarLeft"
@@ -266,6 +266,61 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
                 app:layout_constraintTop_toTopOf="@id/tv5" />
+
+            <View
+                android:id="@+id/divider2"
+                android:layout_width="0dp"
+                android:layout_height="4dp"
+                android:background="?android:attr/listDivider"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv5"
+                tools:layout_editor_absoluteX="1dp"
+                tools:layout_editor_absoluteY="46dp" />
+
+            <ImageView
+                android:id="@+id/ivFirebase"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/firebase"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guideFarLeft"
+                app:layout_constraintTop_toBottomOf="@id/divider2" />
+
+            <TextView
+                android:id="@+id/tv6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:paddingVertical="20dp"
+                android:text="@string/connected"
+                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ivFirebase" />
+
+            <Switch
+                android:id="@+id/sFirebaseConnected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:foregroundGravity="center"
+                app:layout_constraintBottom_toBottomOf="@id/tv6"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guidelineRight"
+                app:layout_constraintTop_toTopOf="@id/tv6" />
+            <Button
+                android:id="@+id/bFireBase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="FB"
+                android:foregroundGravity="center"
+                app:layout_constraintTop_toBottomOf="@id/tv6"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guidelineRight"
+                />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

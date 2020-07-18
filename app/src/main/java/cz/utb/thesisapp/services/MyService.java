@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
+import cz.utb.thesisapp.services.firebase.FirebaseClient;
 import cz.utb.thesisapp.services.kryonet.KryoClient;
 import cz.utb.thesisapp.services.webServices.RestApi;
 import cz.utb.thesisapp.services.webServices.Sse;
@@ -39,6 +40,7 @@ public class MyService extends Service {
     public Sse sse = new Sse(this, broadcast);
     public SpeedTest speedTest = new SpeedTest(broadcast);
     public RestApi restApi = new RestApi(this, broadcast);
+    public FirebaseClient firebaseClient = new FirebaseClient(this, broadcast);
     public boolean webServicesSelected = false;
 
     @Override

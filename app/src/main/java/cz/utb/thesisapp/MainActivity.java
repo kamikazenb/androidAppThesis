@@ -16,13 +16,20 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
+import android.widget.Button;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.github.clans.fab.FloatingActionMenu;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
@@ -78,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
     public long difference = 0;
     private String token;
+    private Firebase firebase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,25 +139,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 //        delays.add(new Entry(5000,2));
         Log.d(TAG, "onCreate: ~~");
 //        readFromLocalStorage();
+
         init();
+
+
+
+
     }
 
-    //    rework
-    /*
-    private void readFromLocalStorage() {
-        DbHelper dbHelper = new DbHelper(this);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor cursor = dbHelper.readFromLocalDatabase(db);
-
-        while (cursor.moveToNext()) {
-            String created = cursor.getString(cursor.getColumnIndex(DB_CLIENT_CREATED));
-            Log.d(TAG, "readFromLocalStorage: ~~" + created);
-        }
-        cursor.close();
-        dbHelper.close();
-    }
-*/
     private void saveToLocalDatabase(Date created, float x, float y, String touchType) {
 
         ContentValues contentValues = new ContentValues();
@@ -174,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.hasExtra(EXTRA_CONNECTION_CLOSED)) {
-               homeViewModel.setWebConnected(false);
+                homeViewModel.setWebConnected(false);
                 Toast.makeText(getApplicationContext(), intent.getExtras().getString(EXTRA_CONNECTION_CLOSED), Toast.LENGTH_SHORT).show();
                 stopWebServices();
             }
@@ -185,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(EXTRA_USER_INFO)){
+            if (intent.hasExtra(EXTRA_USER_INFO)) {
                 Toast.makeText(getApplicationContext(), intent.getExtras().getString(EXTRA_USER_INFO), Toast.LENGTH_SHORT).show();
             }
             if (intent.hasExtra(EXTRA_DOWNLOAD)) {
@@ -298,6 +296,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             } else if (mService.webServicesSelected) {
                 addTimeStamp(x, y);
                 mService.restApi.sendTouch(x, y, touchType, token);
+            }else{
+                addTimeStamp(x, y);
+                mService.firebaseClient.sendTouch(x, y, touchType, new Date(System.currentTimeMillis()));
             }
         }
     }
@@ -338,11 +339,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void startWebServices(String ip, String name) {
         if (ismBound()) {
-            mService.webServicesSelected = true;
+            TokenGenerator tg = new TokenGenerator();
+            token = tg.generateRandom(20);
+            mService.firebaseClient.start(token, name);
+           /* mService.webServicesSelected = true;
             TokenGenerator tg = new TokenGenerator();
             token = tg.generateRandom(20);
             mService.sse.start(ip, token);
-            mService.restApi.startRestApi(ip, name, token);
+            mService.restApi.startRestApi(ip, name, token);*/
         }
     }
 
