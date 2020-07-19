@@ -12,6 +12,7 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<Boolean> requireRefresh = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoConnected = new MutableLiveData<>();
     private MutableLiveData<Boolean> webConnected = new MutableLiveData<>();
+    private MutableLiveData<Boolean> firebaseConnected = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoUseDatabase = new MutableLiveData<>();
     private MutableLiveData<HashMap<String, String>> users = new MutableLiveData<>();
 
@@ -21,6 +22,7 @@ public class HomeViewModel extends ViewModel {
         kryoConnected.setValue(false);
         kryoUseDatabase.setValue(true);
         webConnected.setValue(false);
+        firebaseConnected.setValue(false);
     }
 
 
@@ -31,12 +33,21 @@ public class HomeViewModel extends ViewModel {
     public void setKryoConnected(Boolean kryoConnected) {
         this.kryoConnected.setValue(kryoConnected);
     }
+
     public MutableLiveData<Boolean> getWebConnected() {
         return webConnected;
     }
 
     public void setWebConnected(Boolean webConnected) {
         this.webConnected.setValue(webConnected);
+    }
+
+    public MutableLiveData<Boolean> getFirebaseConnected() {
+        return firebaseConnected;
+    }
+
+    public void setFirebaseConnected(Boolean firebaseConnected) {
+        this.firebaseConnected.setValue(firebaseConnected);
     }
 
     public MutableLiveData<HashMap<String, String>> getUsers() {
@@ -54,6 +65,7 @@ public class HomeViewModel extends ViewModel {
     public void setRequireRefresh(Boolean requireRefresh) {
         this.requireRefresh.setValue(requireRefresh);
     }
+
     public MutableLiveData<Boolean> getKryoUseDatabase() {
         return kryoUseDatabase;
     }
@@ -63,8 +75,9 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void setmBounded(Boolean _mBounded) {
-       mBounded.setValue(_mBounded);
+        mBounded.setValue(_mBounded);
     }
+
     public MutableLiveData<Boolean> getmBounded() {
         return mBounded;
     }

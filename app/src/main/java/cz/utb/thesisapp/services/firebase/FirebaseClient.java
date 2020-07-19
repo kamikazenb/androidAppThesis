@@ -2,11 +2,18 @@ package cz.utb.thesisapp.services.firebase;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.MutableData;
+import com.firebase.client.Transaction;
 import com.firebase.client.ValueEventListener;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -70,16 +77,40 @@ public class FirebaseClient {
         });*/
 
 //        fbListener = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/" + token+"/touch");
+
+
+//        fbListener = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/touch");
+
+
         fbListener = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/touch");
-        fbListener.addValueEventListener(new ValueEventListener() {
+//        fbListener.runTransaction(new Transaction.Handler() {
+//            @Override
+//            public Transaction.Result doTransaction(MutableData mutableData) {
+//                Log.d(TAG, "doTransaction: !~~");
+//                // Return passed in data
+//                return Transaction.success(mutableData);
+//            }
+//
+//            @Override
+//            public void onComplete(FirebaseError firebaseError, boolean success, DataSnapshot dataSnapshot) {
+//                Log.d(TAG, "onComplete: !~~");
+//                if (firebaseError != null || !success || dataSnapshot == null) {
+//                    System.out.println("Failed to get DataSnapshot");
+//                } else {
+//                    System.out.println("Successfully get DataSnapshot");
+//                    //handle data here
+//                }
+//            }
+//        });
+      /* fbListener.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "onDataChange: ~~" + dataSnapshot.getKey());
                 Log.d(TAG, "onDataChange: ~~" + dataSnapshot.getValue());
-
+                fbListener.keepSynced(true);
                 try {
                     Map<String, String> map = dataSnapshot.getValue(Map.class);
-                  myService.saveToLocalDatabase(df.parse(map.get("clientCreated")),
+                    myService.saveToLocalDatabase(df.parse(map.get("clientCreated")),
                             new Date(System.currentTimeMillis()),
                             new Date(System.currentTimeMillis()),
                             Float.parseFloat(map.get("x")),
@@ -96,7 +127,12 @@ public class FirebaseClient {
             public void onCancelled(FirebaseError firebaseError) {
 
             }
-        });
+        });*/
+    }
+
+    public void stop() {
+        fbListener = null;
+        fbSender = null;
     }
 
     public void sendTouch(float x, float y, String touchType, Date created) {
@@ -109,6 +145,51 @@ public class FirebaseClient {
         values.put("touchType", touchType);
         values.put("clientCreated", df.format(created));
         fbSender.updateChildren(values);
+        /*fbSender.updateChildren(values, new Firebase.CompletionListener() {
+            @Override
+            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
+                if (firebaseError != null) {
+                    Log.d(TAG, "onComplete: ~~Data could not be saved.");
+                } else {
+                    Log.d(TAG, "onComplete: ~~Data saved successfull");
+                }
+            }
+        });*/
+        fbSender.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                Log.d(TAG, "doTransaction: !~~" + mutableData);
+                // Return passed in data
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(FirebaseError firebaseError, boolean success, DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onComplete: !~~" + dataSnapshot);
+                if (firebaseError != null || !success || dataSnapshot == null) {
+                    System.out.println("Failed to get DataSnapshot");
+                } else {
+                    try {
+                        Map<String, String> map = dataSnapshot.getValue(Map.class);
+                        myService.saveToLocalDatabase(df.parse(map.get("clientCreated")),
+                                new Date(System.currentTimeMillis()),
+                                new Date(System.currentTimeMillis()),
+                                Float.parseFloat(map.get("x")),
+                                Float.parseFloat(map.get("y")),
+                                map.get("touchType"));
+                    } catch (Exception e) {
+                        Log.d(TAG, "onDataChange: ~~" + e);
+                    }
+                    System.out.println("Successfully get DataSnapshot");
+                    //handle data here
+                }
+            }
+        });
+        fbSender.updateChildren(values);
+        // Use runTransaction to bypass cached DataSnapshot
+
+
+
 
     /*    fbChildRef.child("x").setValue(String.valueOf(x));
         fbChildRef.child("y").setValue(String.valueOf(y));

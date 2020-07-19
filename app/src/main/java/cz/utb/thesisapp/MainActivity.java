@@ -143,8 +143,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         init();
 
 
-
-
     }
 
 
@@ -296,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             } else if (mService.webServicesSelected) {
                 addTimeStamp(x, y);
                 mService.restApi.sendTouch(x, y, touchType, token);
-            }else{
+            } else {
                 addTimeStamp(x, y);
                 mService.firebaseClient.sendTouch(x, y, touchType, new Date(System.currentTimeMillis()));
             }
@@ -341,20 +339,34 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (ismBound()) {
             TokenGenerator tg = new TokenGenerator();
             token = tg.generateRandom(20);
-            mService.firebaseClient.start(token, name);
-           /* mService.webServicesSelected = true;
-            TokenGenerator tg = new TokenGenerator();
-            token = tg.generateRandom(20);
+            mService.webServicesSelected = true;
             mService.sse.start(ip, token);
-            mService.restApi.startRestApi(ip, name, token);*/
+            mService.restApi.startRestApi(ip, name, token);
         }
     }
+
+    public void startFirebaseServices(String ip, String name) {
+        if (ismBound()) {
+            TokenGenerator tg = new TokenGenerator();
+            token = tg.generateRandom(20);
+            mService.firebaseClient.start(token, name);
+            mService.firebaseSelected = true;
+        }
+    }
+
 
     public void stopWebServices() {
         if (ismBound()) {
             mService.webServicesSelected = false;
             mService.sse.stop();
             mService.restApi.stop();
+        }
+    }
+
+    public void stopFirebase() {
+        if (ismBound()) {
+            mService.firebaseSelected = false;
+            mService.firebaseClient.stop();
         }
     }
 
