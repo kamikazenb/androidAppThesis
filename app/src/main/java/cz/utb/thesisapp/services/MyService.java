@@ -22,8 +22,6 @@ import java.util.Random;
 import static cz.utb.thesisapp.GlobalValues.DATE_FORMAT;
 import static cz.utb.thesisapp.GlobalValues.DB_CLIENT_CREATED;
 import static cz.utb.thesisapp.GlobalValues.DB_CLIENT_RECEIVED;
-import static cz.utb.thesisapp.GlobalValues.DB_SERVER_RECEIVED;
-import static cz.utb.thesisapp.GlobalValues.DB_TABLE_NAME;
 import static cz.utb.thesisapp.GlobalValues.DB_TOUCH_TYPE;
 import static cz.utb.thesisapp.GlobalValues.DB_X;
 import static cz.utb.thesisapp.GlobalValues.DB_Y;

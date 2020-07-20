@@ -60,7 +60,6 @@ public class KryoClient {
                     broadcast.sendFloats(FILTER_TOUCH, ((Network.Touch) object).touchType,
                             ((Network.Touch) object).x, ((Network.Touch) object).y);
                     service.saveToLocalDatabase(((Network.Touch) object).clientCreated,
-                            ((Network.Touch) object).serverReceived,
                             new Date(System.currentTimeMillis()),
                             ((Network.Touch) object).x,
                             ((Network.Touch) object).y,

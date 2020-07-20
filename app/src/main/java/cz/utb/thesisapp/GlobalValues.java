@@ -61,7 +61,6 @@ public class GlobalValues {
         public float y;
         public String touchType;
         public Date clientCreated;
-        public Date serverReceived;
         public Date clientReceived;
     }
 

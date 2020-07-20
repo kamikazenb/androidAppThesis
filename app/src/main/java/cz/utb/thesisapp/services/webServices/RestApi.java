@@ -103,7 +103,6 @@ public class RestApi {
             joTouch.put("y", y);
             joTouch.put("touchType", touchType);
             joTouch.put("clientCreated", df.format(new Date(System.currentTimeMillis())));
-            joTouch.put("serverReceived", df.format(new Date(System.currentTimeMillis())));
             joClient.put("token", token);
             joClient.put("name", "");
             joSend.put("touch", joTouch);

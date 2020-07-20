@@ -58,14 +58,12 @@ import cz.utb.thesisapp.contentProvider.CSVWriter;
 import cz.utb.thesisapp.contentProvider.DbHelper;
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
-import cz.utb.thesisapp.services.SNTPClient;
 import cz.utb.thesisapp.services.TokenGenerator;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
 import cz.utb.thesisapp.ui.touch.TouchFragment;
 import cz.utb.thesisapp.ui.touch.TouchViewModel;
-import io.github.eterverda.sntp.SNTP;
 
 import android.app.LoaderManager;
 
@@ -86,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private SimpleCursorAdapter dataAdapter;
     private Cursor oldCursor;
     SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-    public long difference = 0;
     private String token;
     private Firebase firebase;
 
@@ -127,16 +124,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-/*        speedDialView.setOnActionSelectedListener(SpeedDialView.OnActionSelectedListener { actionItem ->
-                when (actionItem.id) {
-            R.id.fab_no_label -> {
-                showToast("No label action clicked!\nClosing with animation")
-                speedDialView.close() // To close the Speed Dial with animation
-                return@OnActionSelectedListener true // false will close it without animation
-            }
-        }
-            false
-        })*/
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         Menu topLevelMenu = navigationView.getMenu();
@@ -150,26 +137,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         currentlyShownTag = HomeFragment.class.getName();
 
-     /*   ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                homeViewModel.setRequireRefresh(true);
-                ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
-            }
-        });
 
-        ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabEdit)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                mService.broadcast.sendValue(FILTER_MAIN_ACTIVITY, EXTRA_EDIT, true);
-                ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
-            }
-        });*/
-
-//        delays.add(new Entry(5000,2));
         Log.d(TAG, "onCreate: ~~");
-//        readFromLocalStorage();
 
         init();
 
@@ -307,18 +276,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         } else {
             homeViewModel.setKryoConnected(false);
         }
-        Thread t = new Thread() {
-            public void run() {
-                try {
-                    long global = SNTP.currentTimeMillisFromNetwork();
-                    difference = global - System.currentTimeMillis();
-                } catch (IOException e) {
-                    Log.d(TAG, "run: ~~" + e);
-                }
 
-            }
-        };
-        t.start();
     }
 
     public void stopKryo() {
@@ -483,7 +441,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         LocalBroadcastManager.getInstance(this).registerReceiver(kryoReceiver, new IntentFilter(FILTER_KRYO));
         LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter(FILTER_INFO));
         LocalBroadcastManager.getInstance(this).registerReceiver(webReceiver, new IntentFilter(FILTER_WEB));
-//        LocalBroadcastManager.getInstance(this).registerReceiver(touchReceiver, new IntentFilter(FILTER_TOUCH));
         startService();
         Log.d(TAG, "onResume: ~~");
         //Starts a new or restarts an existing Loader in this manager
@@ -548,27 +505,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         DbHelper dbHelper = new DbHelper(this);
         dbHelper.onUpgrade(dbHelper.getWritableDatabase(), 0, 1);
         getLoaderManager().initLoader(0, null, this);
-        SNTPClient.getDate(Calendar.getInstance().getTimeZone(), new SNTPClient.Listener() {
-            @Override
-            public void onTimeReceived(String rawDate) {
-                // rawDate -> 2019-11-05T17:51:01+0530
-                Log.d(SNTPClient.TAG, "server~~" + rawDate);
-                Log.d(SNTPClient.TAG, "local~~" + dateFormat.format(new Date(System.currentTimeMillis())));
-            }
-
-            @Override
-            public void onError(Exception ex) {
-                Log.e(SNTPClient.TAG, ex.getMessage());
-            }
-        });
-        SNTP.init();
-        Thread t = new Thread() {
-            public void run() {
-                long global = SNTP.safeCurrentTimeMillis();
-                difference = global - System.currentTimeMillis();
-            }
-        };
-        t.start();
 
     }
 
@@ -576,7 +512,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-//        Log.d(TAG, "onLoadFinished: ~~-------------------------------------------");
         cursor.setNotificationUri(getContentResolver(), MyContentProvider.CONTENT_URI);
         if (oldCursor != null) {
             int diff = cursor.getCount() - oldCursor.getCount();
@@ -592,20 +527,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         int i = position;
         ArrayList<Touch> al = new ArrayList<>();
         while (cursor.moveToPosition(i)) {
-          /*  Log.d(TAG, "~~" + cursor.getString(0) + " creat:" + cursor.getString(3)
-                    + " serverRec:" + cursor.getString(4) + " clientRec:" + cursor.getString(5));*/
             Touch touch = new Touch();
             touch.touchType = cursor.getString(0);
             touch.x = cursor.getFloat(1);
             touch.y = cursor.getFloat(2);
             try {
                 touch.clientCreated = dateFormat.parse(cursor.getString(3));
-                touch.serverReceived = dateFormat.parse(cursor.getString(4));
-                touch.clientReceived = dateFormat.parse(cursor.getString(5));
+                touch.clientReceived = dateFormat.parse(cursor.getString(4));
             } catch (ParseException e) {
                 Log.d(TAG, "setViewModelTouch: ~~" + e);
                 touch.clientCreated = new Date(System.currentTimeMillis());
-                touch.serverReceived = new Date(System.currentTimeMillis());
                 touch.clientReceived = new Date(System.currentTimeMillis());
             }
             al.add(touch);
@@ -621,12 +552,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
 //        dataAdapter.swapCursor(null);
-    }
-
-    public void dltDatabase(String where) {
-        String selection = DB_TOUCH_TYPE + " LIKE ?";
-        String[] selectionArgs = {where};
-        getContentResolver().delete(MyContentProvider.CONTENT_URI, selection, selectionArgs);
     }
 
 

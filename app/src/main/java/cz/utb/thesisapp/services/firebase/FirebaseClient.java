@@ -54,7 +54,6 @@ public class FirebaseClient {
                         Map<String, String> map = dataSnapshot.getValue(Map.class);
                         myService.saveToLocalDatabase(df.parse(map.get("clientCreated")),
                                 new Date(System.currentTimeMillis()),
-                                new Date(System.currentTimeMillis()),
                                 Float.parseFloat(map.get("x")),
                                 Float.parseFloat(map.get("y")),
                                 map.get("touchType"));
@@ -129,7 +128,6 @@ public class FirebaseClient {
                         try {
                             Map<String, String> map = dataSnapshot.getValue(Map.class);
                             myService.saveToLocalDatabase(df.parse(map.get("clientCreated")),
-                                    new Date(System.currentTimeMillis()),
                                     new Date(System.currentTimeMillis()),
                                     Float.parseFloat(map.get("x")),
                                     Float.parseFloat(map.get("y")),

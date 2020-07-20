@@ -46,7 +46,6 @@ public class Sse {
                 JSONObject jo = new JSONObject(message);
                 myService.saveToLocalDatabase(
                         df.parse(jo.getString("clientCreated")),
-                        df.parse(jo.getString("serverReceived")),
                         new Date(System.currentTimeMillis()),
                         (float) jo.getDouble("x"),
                         (float) jo.getDouble("y"),
