@@ -52,7 +52,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'com.github.clans:fab:1.6.4'
+   implementation 'com.github.clans:fab:1.6.4'
     implementation 'com.github.mukeshsolanki:DrawingView-Android:1.0.11'
     implementation 'com.esotericsoftware:kryonet:2.22.0-RC1'
     implementation 'fr.bmartel:jspeedtest:1.31.3'
@@ -67,5 +67,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:19.3.1'
     implementation 'com.google.firebase:firebase-auth:19.3.2'
     implementation 'com.firebase:firebase-client-android:2.5.2'
-
+    implementation "com.leinardi.android:speed-dial:3.1.1"
 }

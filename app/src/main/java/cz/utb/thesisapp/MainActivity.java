@@ -23,6 +23,8 @@ import com.github.clans.fab.FloatingActionMenu;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProviders;
@@ -53,6 +55,7 @@ import cz.utb.thesisapp.services.TokenGenerator;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
+import cz.utb.thesisapp.ui.touch.TouchFragment;
 import cz.utb.thesisapp.ui.touch.TouchViewModel;
 import io.github.eterverda.sntp.SNTP;
 
@@ -91,13 +94,41 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
+        /*  FloatingActionButton fab = findViewById(R.id.fab);*/
         context = this;
-        fab.setOnClickListener(new View.OnClickListener() {
+      /*  fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
             }
+        });*/
+        SpeedDialView speedDialView = findViewById(R.id.speedDial);
+        speedDialView.addActionItem(
+                new SpeedDialActionItem.Builder(R.id.fab_start_test, R.drawable.ic_network_check_white_36dp).setLabel("Start test")
+                        .create());
+        speedDialView.setOnActionSelectedListener(new SpeedDialView.OnActionSelectedListener() {
+            @Override
+            public boolean onActionSelected(SpeedDialActionItem actionItem) {
+                switch (actionItem.getId()){
+                    case R.id.fab_start_test:
+                        Log.d(TAG, "onActionSelected: ~~"+actionItem.getId());
+                        touchViewModel.setTest(TOUCH_FAB_TOUCHED);
+                        break;
+                    default:
+                }
+                return false;
+            }
         });
+
+/*        speedDialView.setOnActionSelectedListener(SpeedDialView.OnActionSelectedListener { actionItem ->
+                when (actionItem.id) {
+            R.id.fab_no_label -> {
+                showToast("No label action clicked!\nClosing with animation")
+                speedDialView.close() // To close the Speed Dial with animation
+                return@OnActionSelectedListener true // false will close it without animation
+            }
+        }
+            false
+        })*/
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         Menu topLevelMenu = navigationView.getMenu();
@@ -111,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         currentlyShownTag = HomeFragment.class.getName();
 
-        ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh)).setOnClickListener(new View.OnClickListener() {
+     /*   ((com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 homeViewModel.setRequireRefresh(true);
@@ -126,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mService.broadcast.sendValue(FILTER_MAIN_ACTIVITY, EXTRA_EDIT, true);
                 ((FloatingActionMenu) findViewById(R.id.floatingActionMenu)).close(true);
             }
-        });
+        });*/
 
 //        delays.add(new Entry(5000,2));
         Log.d(TAG, "onCreate: ~~");
@@ -286,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             } else if (homeViewModel.getWebConnected().getValue()) {
                 addTimeStamp(x, y);
                 mService.restApi.sendTouch(x, y, touchType, token);
-            } else if(homeViewModel.getFirebaseConnected().getValue()){
+            } else if (homeViewModel.getFirebaseConnected().getValue()) {
                 addTimeStamp(x, y);
                 mService.firebaseClient.sendTouch(x, y, touchType, new Date(System.currentTimeMillis()));
             }
@@ -305,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mService.kryoClient.newClient(ip, userName);
                 homeViewModel.setKryoConnected(true);
             }
-        }else {
+        } else {
             homeViewModel.setKryoConnected(false);
         }
         Thread t = new Thread() {
@@ -338,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             token = tg.generateRandom(20);
             mService.sse.start(ip, token);
             mService.restApi.startRestApi(ip, name, token);
-        }else {
+        } else {
             homeViewModel.setWebConnected(false);
         }
     }
@@ -349,15 +380,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             TokenGenerator tg = new TokenGenerator();
             token = tg.generateRandom(20);
             mService.firebaseClient.start(homeViewModel.getFirebaseRemoteListener().getValue(), token, name);
-        }else {
+        } else {
             homeViewModel.setFirebaseConnected(false);
         }
     }
 
-    public void setFirebaseRemoteListener(){
-        if(ismBound()){
+    public void setFirebaseRemoteListener() {
+        if (ismBound()) {
             mService.firebaseClient.start(homeViewModel.getFirebaseRemoteListener().getValue());
-        }else {
+        } else {
             homeViewModel.setFirebaseConnected(false);
         }
     }
@@ -546,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        Log.d(TAG, "onLoadFinished: ~~-------------------------------------------");
+//        Log.d(TAG, "onLoadFinished: ~~-------------------------------------------");
         cursor.setNotificationUri(getContentResolver(), MyContentProvider.CONTENT_URI);
         if (oldCursor != null) {
             int diff = cursor.getCount() - oldCursor.getCount();

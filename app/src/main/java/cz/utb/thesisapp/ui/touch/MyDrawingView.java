@@ -46,6 +46,14 @@ public class MyDrawingView extends View {
     private static final String TAG = "MyDrawingView";
     private int canvasH, canvasW;
 
+    public int getCanvasH() {
+        return canvasH;
+    }
+
+    public int getCanvasW() {
+        return canvasW;
+    }
+
     public MyDrawingView(Context c) {
         this(c, null);
     }

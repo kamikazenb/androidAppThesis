@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -32,13 +34,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import cz.utb.thesisapp.GlobalValues;
 import cz.utb.thesisapp.MainActivity;
 import cz.utb.thesisapp.R;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
+
+import static cz.utb.thesisapp.GlobalValues.*;
 
 public class TouchFragment extends Fragment {
     private static final String TAG = "TouchFragment";
@@ -58,8 +62,8 @@ public class TouchFragment extends Fragment {
     volatile int dataSize = 1;
     boolean threadRun = true;
     private Thread thread;
-    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
+    SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
+    AsyncTask<Void, Void, String> runningTask;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -139,6 +143,30 @@ public class TouchFragment extends Fragment {
             }
         });
 
+        touchViewModel.getTest().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                Log.d(TAG, "onChanged: ~~");
+                switch (integer) {
+                    case TOUCH_START_TEST:
+                        Log.d(TAG, "onChanged: ~~TOUCH_START_TEST");
+                        if (runningTask != null) {
+                            runningTask.cancel(true);
+                        }
+                        runningTask = new TestTask();
+                        runningTask.execute();
+                        break;
+                    case TOUCH_BREAK_TEST:
+                        Log.d(TAG, "onChanged: ~~TOUCH_BREAK_TEST");
+                        if (runningTask != null) {
+                            runningTask.cancel(true);
+                        }
+                        break;
+                }
+            }
+        });
+
+
         return root;
     }
 
@@ -166,7 +194,7 @@ public class TouchFragment extends Fragment {
                     }
                 }
             }
-        }) ;
+        });
         thread.start();
     }
 
@@ -268,5 +296,51 @@ public class TouchFragment extends Fragment {
         }
         super.onStop();
         Log.d(TAG, "onStop: ~~");
+    }
+
+    private class TestTask extends AsyncTask<Void, Void, String> {
+        protected String doInBackground(Void... params) {
+            int canvasH = dvThisApp.getCanvasH();
+            int canvasW = dvThisApp.getCanvasW();
+            boolean started = false;
+            for (int i = 0; i < TOUCH_ITERATIONS; i++) {
+                if (isCancelled()) {
+                    break;
+                }
+                try {
+                    int action = MotionEvent.ACTION_DOWN;
+                    if (!started) {
+                        started = true;
+                    } else {
+                        if (new Random().nextDouble() < 0.8) {
+                            action = MotionEvent.ACTION_MOVE;
+                        } else {
+                            action = MotionEvent.ACTION_UP;
+                            started = false;
+                        }
+                    }
+                    dvThisApp.onTouchEvent(MotionEvent.obtain(System.currentTimeMillis(),
+                            System.currentTimeMillis(),
+                            action,
+                            canvasW * (float) (new Random().nextDouble()),
+                            canvasH * (float) (new Random().nextDouble()),
+                            0));
+
+                    double percentage = Math.abs(Math.sin(Math.toRadians((double) i)));
+                    Log.d(TAG, "doInBackground: ~~" + percentage);
+                    Thread.sleep(TOUCH_SLEEP_MIN + ((int) (TOUCH_SLEEP_BASE * percentage)));
+                } catch (InterruptedException e) {
+                    // We were cancelled; stop sleeping!
+                }
+            }
+            return "Executed";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // txt.setText(result);
+            // You might want to change "executed" for the returned string
+            // passed into onPostExecute(), but that is up to you
+        }
     }
 }

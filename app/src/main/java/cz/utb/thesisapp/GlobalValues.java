@@ -7,6 +7,14 @@ import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_START;
 import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_UP;
 
 public class GlobalValues {
+    public static final int TOUCH_NO_TEST = 0;
+    public static final int TOUCH_START_TEST = 1;
+    public static final int TOUCH_BREAK_TEST = 2;
+    public static final int TOUCH_FAB_TOUCHED = 3;
+
+    public static final int TOUCH_SLEEP_MIN = 80;
+    public static final int TOUCH_SLEEP_BASE = 250;
+    public static final int TOUCH_ITERATIONS = 400;
     //broadcast filters
     public static final String FILTER_KRYO = "kryo";
     public static final String FILTER_INFO = "info";
@@ -62,4 +70,7 @@ public class GlobalValues {
     public static final String API_CLIENT = "/client";
     public static final String API_TOUCH = "/touch";
     public static final String API_SSE = "/sse";
+
+
+
 }
