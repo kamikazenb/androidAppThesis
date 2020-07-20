@@ -10,7 +10,9 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
@@ -26,7 +28,9 @@ import com.google.android.material.navigation.NavigationView;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
+import androidx.annotation.LongDef;
 import androidx.core.view.GravityCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
@@ -37,6 +41,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,8 +51,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import cz.utb.thesisapp.contentProvider.CSVWriter;
 import cz.utb.thesisapp.contentProvider.DbHelper;
 import cz.utb.thesisapp.contentProvider.MyContentProvider;
 import cz.utb.thesisapp.services.MyService;
@@ -108,9 +116,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         speedDialView.setOnActionSelectedListener(new SpeedDialView.OnActionSelectedListener() {
             @Override
             public boolean onActionSelected(SpeedDialActionItem actionItem) {
-                switch (actionItem.getId()){
+                switch (actionItem.getId()) {
                     case R.id.fab_start_test:
-                        Log.d(TAG, "onActionSelected: ~~"+actionItem.getId());
+                        Log.d(TAG, "onActionSelected: ~~" + actionItem.getId());
                         touchViewModel.setTest(TOUCH_FAB_TOUCHED);
                         break;
                     default:
@@ -166,17 +174,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         init();
 
 
-    }
-
-
-    private void saveToLocalDatabase(Date created, float x, float y, String touchType) {
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(DB_TOUCH_TYPE, touchType);
-        contentValues.put(DB_X, x);
-        contentValues.put(DB_Y, y);
-        contentValues.put(DB_SERVER_RECEIVED, dateFormat.format(created));
-        getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
     }
 
 
@@ -238,35 +235,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         sb1 = sb1.substring(1);
         return Float.valueOf(sb1) / 1000;
     }
-
-/*    private final BroadcastReceiver touchReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(EXTRA_TOUCH_MOVE)) {
-                ArrayList<Float> a = new ArrayList<>();
-                a.add(intent.getFloatExtra(EXTRA_X, 0));
-                a.add(intent.getFloatExtra(EXTRA_Y, 0));
-                touchViewModel.setTouchMove(a);
-
-//                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
-//                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_MOVE);
-            }
-            if (intent.hasExtra(EXTRA_TOUCH_START)) {
-                ArrayList<Float> a = new ArrayList<>();
-                a.add(intent.getFloatExtra(EXTRA_X, 0));
-                a.add(intent.getFloatExtra(EXTRA_Y, 0));
-                touchViewModel.setTouchStart(a);
-//                saveToLocalDatabase(new Date(System.currentTimeMillis()), intent.getFloatExtra(EXTRA_X, 0),
-//                        intent.getFloatExtra(EXTRA_Y, 0), EXTRA_TOUCH_START);
-            }
-            if (intent.hasExtra(EXTRA_TOUCH_UP)) {
-                touchViewModel.setTouchUp(true);
-//                saveToLocalDatabase(new Date(System.currentTimeMillis()), (float) 0.0,
-//                        (float) 0.0, EXTRA_TOUCH_UP);
-            }
-        }
-    };*/
 
 
     private final BroadcastReceiver kryoReceiver = new BroadcastReceiver() {
@@ -538,11 +506,42 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 DB_X,
                 DB_Y,
                 DB_CLIENT_CREATED,
-                DB_SERVER_RECEIVED,
                 DB_CLIENT_RECEIVED
         };
         return new CursorLoader(this,
                 MyContentProvider.CONTENT_URI, projection, null, null, null);
+    }
+
+    public void exportDB() {
+        Log.d(TAG, "exportDB: ~~starting");
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        File exportDir = new File(context.getExternalFilesDir(null), "");
+        if (!exportDir.exists()) {
+            exportDir.mkdirs();
+        }
+
+        File file = new File(exportDir, "test" + dateFormat.format(new Date()) + ".csv");
+        try {
+            file.createNewFile();
+            CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+            Cursor curCSV = db.rawQuery("SELECT * FROM " + DB_TABLE_NAME, null);
+            csvWrite.writeNext(curCSV.getColumnNames());
+            while (curCSV.moveToNext()) {
+                //Which column you want to exprort
+                String arrStr[] = {curCSV.getString(0), curCSV.getString(1), curCSV.getString(2),
+                        curCSV.getString(3), curCSV.getString(4), curCSV.getString(5),};
+                csvWrite.writeNext(arrStr);
+            }
+            csvWrite.close();
+            curCSV.close();
+            dbHelper.onUpgrade(db, 0, 1);
+            Log.d(TAG, "exportDB: ~~Exported");
+        } catch (Exception sqlEx) {
+            Log.d(TAG, "exportDB: ~~" + sqlEx.getMessage(), sqlEx);
+//            Log.d(TAG, sqlEx.getMessage(), sqlEx);
+        }
     }
 
     public void init() {

@@ -73,14 +73,13 @@ public class MyService extends Service {
         Log.d(TAG, "onDestroy: called.");
     }
 
-    public void saveToLocalDatabase(Date created, Date serverReceived, Date clientReceived, float x, float y, String touchType) {
+    public void saveToLocalDatabase(Date created, Date clientReceived, float x, float y, String touchType) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
         ContentValues contentValues = new ContentValues();
         contentValues.put(DB_TOUCH_TYPE, touchType);
         contentValues.put(DB_X, x);
         contentValues.put(DB_Y, y);
         contentValues.put(DB_CLIENT_CREATED, dateFormat.format(created));
-        contentValues.put(DB_SERVER_RECEIVED, dateFormat.format(serverReceived));
         contentValues.put(DB_CLIENT_RECEIVED, dateFormat.format(clientReceived));
         getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues);
     }

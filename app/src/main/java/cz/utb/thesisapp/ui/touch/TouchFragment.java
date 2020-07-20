@@ -63,7 +63,7 @@ public class TouchFragment extends Fragment {
     boolean threadRun = true;
     private Thread thread;
     SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
-    AsyncTask<Void, Void, String> runningTask;
+    AsyncTask<Void, Void, Integer> runningTask;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -155,12 +155,30 @@ public class TouchFragment extends Fragment {
                         }
                         runningTask = new TestTask();
                         runningTask.execute();
+                        touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_BREAK_TEST:
                         Log.d(TAG, "onChanged: ~~TOUCH_BREAK_TEST");
                         if (runningTask != null) {
                             runningTask.cancel(true);
                         }
+                        touchViewModel.setTest(TOUCH_NO_TEST);
+                        break;
+                    case TOUCH_TEST_FINISHED:
+                        Activity act = getActivity();
+                        if (act instanceof MainActivity) {
+                            ((MainActivity) act).exportDB();
+                        }
+                        try {
+                            dvThisApp.clear();
+                            dvRemoteApp.clear();
+                        }catch (Exception e){
+                            Log.d(TAG, "onChanged: ~~"+e);
+                        }
+
+                        touchViewModel.setTest(TOUCH_NO_TEST);
+                        break;
+                    case TOUCH_NO_TEST:
                         break;
                 }
             }
@@ -298,8 +316,8 @@ public class TouchFragment extends Fragment {
         Log.d(TAG, "onStop: ~~");
     }
 
-    private class TestTask extends AsyncTask<Void, Void, String> {
-        protected String doInBackground(Void... params) {
+    private class TestTask extends AsyncTask<Void, Void, Integer> {
+        protected Integer doInBackground(Void... params) {
             int canvasH = dvThisApp.getCanvasH();
             int canvasW = dvThisApp.getCanvasW();
             boolean started = false;
@@ -331,13 +349,16 @@ public class TouchFragment extends Fragment {
                     Thread.sleep(TOUCH_SLEEP_MIN + ((int) (TOUCH_SLEEP_BASE * percentage)));
                 } catch (InterruptedException e) {
                     // We were cancelled; stop sleeping!
+                    return TOUCH_NO_TEST;
                 }
             }
-            return "Executed";
+            return TOUCH_TEST_FINISHED;
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(Integer result) {
+            Log.d(TAG, "onPostExecute: ~~"+result);
+            touchViewModel.setTest(result);
             // txt.setText(result);
             // You might want to change "executed" for the returned string
             // passed into onPostExecute(), but that is up to you

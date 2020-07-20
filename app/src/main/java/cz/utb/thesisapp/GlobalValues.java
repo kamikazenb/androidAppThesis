@@ -10,11 +10,12 @@ public class GlobalValues {
     public static final int TOUCH_NO_TEST = 0;
     public static final int TOUCH_START_TEST = 1;
     public static final int TOUCH_BREAK_TEST = 2;
+    public static final int TOUCH_TEST_FINISHED = 4;
     public static final int TOUCH_FAB_TOUCHED = 3;
 
     public static final int TOUCH_SLEEP_MIN = 80;
     public static final int TOUCH_SLEEP_BASE = 250;
-    public static final int TOUCH_ITERATIONS = 400;
+    public static final int TOUCH_ITERATIONS = 20;
     //broadcast filters
     public static final String FILTER_KRYO = "kryo";
     public static final String FILTER_INFO = "info";
@@ -51,7 +52,6 @@ public class GlobalValues {
     public static final String DB_Y = "y";
     public static final String DB_TOUCH_TYPE = "touchType";
     public static final String DB_CLIENT_CREATED = "clientCreated";
-    public static final String DB_SERVER_RECEIVED = "serverReceived";
     public static final String DB_CLIENT_RECEIVED = "clientReceived";
 
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
