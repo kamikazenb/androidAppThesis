@@ -15,7 +15,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="80dp">
+            android:paddingBottom="50dp">
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideFarLeft"
@@ -188,40 +188,15 @@
                 app:layout_constraintEnd_toStartOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guideLeft2"
                 app:layout_constraintTop_toTopOf="@+id/tv3" />
-
-            <TextView
-                android:id="@+id/tv4"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:paddingVertical="20dp"
-                android:text="Following"
-                app:layout_constraintEnd_toStartOf="@id/guideLeft1"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tv3" />
-
-            <TextView
-                android:id="@+id/tvKryoPairName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:gravity="left"
-                android:paddingVertical="20dp"
-                android:textColor="#000"
-                app:layout_constraintBottom_toBottomOf="@+id/tv4"
-                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-                app:layout_constraintStart_toStartOf="@id/guideLeft2"
-                app:layout_constraintTop_toTopOf="@+id/tv4" />
-
-
             <Switch
                 android:id="@+id/switchSynced"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="false"
-                app:layout_constraintBottom_toBottomOf="@+id/tv4"
+                app:layout_constraintBottom_toBottomOf="@+id/tv3"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
-                app:layout_constraintTop_toBottomOf="@id/tv3" />
+                app:layout_constraintTop_toTopOf="@id/tv3" />
 
             <View
                 android:id="@+id/divider1"
@@ -230,7 +205,7 @@
                 android:background="?android:attr/listDivider"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tv4"
+                app:layout_constraintTop_toBottomOf="@+id/tv3"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="46dp" />
 
@@ -310,17 +285,28 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
                 app:layout_constraintTop_toTopOf="@id/tv6" />
-            <Button
-                android:id="@+id/bFireBase"
+            <TextView
+                android:id="@+id/tv7"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:paddingVertical="20dp"
+                android:text="Listen remote devices"
+                app:layout_constraintEnd_toStartOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guideLeft2"
+                app:layout_constraintTop_toBottomOf="@id/tv6" />
+            <Switch
+                android:id="@+id/sFirebaseRemoteListener"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="false"
-                android:text="FB"
                 android:foregroundGravity="center"
-                app:layout_constraintTop_toBottomOf="@id/tv6"
+                app:layout_constraintBottom_toBottomOf="@id/tv7"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/guidelineRight"
-                />
+                app:layout_constraintTop_toTopOf="@id/tv7" />
+
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

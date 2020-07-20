@@ -8,13 +8,16 @@ import java.util.HashMap;
 
 public class HomeViewModel extends ViewModel {
     private static final String TAG = "HomeViewModel";
+    private MutableLiveData<HashMap<String, String>> users = new MutableLiveData<>();
     private MutableLiveData<Boolean> mBounded = new MutableLiveData<>();
     private MutableLiveData<Boolean> requireRefresh = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoConnected = new MutableLiveData<>();
-    private MutableLiveData<Boolean> webConnected = new MutableLiveData<>();
-    private MutableLiveData<Boolean> firebaseConnected = new MutableLiveData<>();
     private MutableLiveData<Boolean> kryoUseDatabase = new MutableLiveData<>();
-    private MutableLiveData<HashMap<String, String>> users = new MutableLiveData<>();
+
+    private MutableLiveData<Boolean> webConnected = new MutableLiveData<>();
+
+    private MutableLiveData<Boolean> firebaseConnected = new MutableLiveData<>();
+    private MutableLiveData<Boolean> firebaseRemoteListener = new MutableLiveData<>();
 
     public HomeViewModel() {
         mBounded.setValue(false);
@@ -23,6 +26,7 @@ public class HomeViewModel extends ViewModel {
         kryoUseDatabase.setValue(true);
         webConnected.setValue(false);
         firebaseConnected.setValue(false);
+        firebaseRemoteListener.setValue(false);
     }
 
 
@@ -31,6 +35,10 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void setKryoConnected(Boolean kryoConnected) {
+        if (kryoConnected) {
+            setFirebaseConnected(false);
+            setWebConnected(false);
+        }
         this.kryoConnected.setValue(kryoConnected);
     }
 
@@ -39,6 +47,10 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void setWebConnected(Boolean webConnected) {
+        if (webConnected) {
+            setKryoConnected(false);
+            setFirebaseConnected(false);
+        }
         this.webConnected.setValue(webConnected);
     }
 
@@ -47,6 +59,12 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void setFirebaseConnected(Boolean firebaseConnected) {
+        if (firebaseConnected) {
+            setWebConnected(false);
+            setKryoConnected(false);
+        }else {
+            setFirebaseRemoteListener(false);
+        }
         this.firebaseConnected.setValue(firebaseConnected);
     }
 
@@ -83,4 +101,16 @@ public class HomeViewModel extends ViewModel {
     }
 
 
+
+    public void setFirebaseRemoteListener(boolean firebaseRemoteListener) {
+
+        this.firebaseRemoteListener.setValue(firebaseRemoteListener);
+    }
+
+    public MutableLiveData<Boolean> getFirebaseRemoteListener() {
+        return firebaseRemoteListener;
+    }
 }
+
+
+

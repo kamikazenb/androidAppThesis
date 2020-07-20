@@ -60,20 +60,17 @@ public class Sse {
 
         @Override
         public void onComment(ServerSentEvent sse, String comment) {
-            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onComment");
             Log.d(TAG, "onComment: ~~");
         }
 
         @Override
         public boolean onRetryTime(ServerSentEvent sse, long milliseconds) {
-            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onRetryTime");
             Log.d(TAG, "onRetryTime: ~~");
             return false;
         }
 
         @Override
         public boolean onRetryError(ServerSentEvent sse, Throwable throwable, Response response) {
-            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onRetryError");
             Log.d(TAG, "onRetryError: ~~" + throwable);
             return false;
         }
@@ -81,13 +78,11 @@ public class Sse {
         @Override
         public void onClosed(ServerSentEvent sse) {
             Log.d(TAG, "onClosed: ~~");
-            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onClosed");
-//             broadcast.sendValue(FILTER_WEB, EXTRA_CONNECTION_CLOSED, "Connection to webservices NA");
+            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "Web Services: connection NA");
         }
 
         @Override
         public Request onPreRetry(ServerSentEvent sse, Request originalRequest) {
-            broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onPreRetry");
             Log.d(TAG, "onPreRetry: ~~");
             return null;
         }

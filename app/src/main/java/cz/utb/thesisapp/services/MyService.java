@@ -41,8 +41,7 @@ public class MyService extends Service {
     public SpeedTest speedTest = new SpeedTest(broadcast);
     public RestApi restApi = new RestApi(this, broadcast);
     public FirebaseClient firebaseClient = new FirebaseClient(this, broadcast);
-    public boolean webServicesSelected = false;
-    public boolean firebaseSelected = false;
+
 
     @Override
     public IBinder onBind(Intent intent) {

@@ -84,7 +84,13 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(Boolean aBoolean) {
                 ((Switch) root.findViewById(R.id.sFirebaseConnected)).setChecked(aBoolean);
-
+                ((Switch) root.findViewById(R.id.sFirebaseRemoteListener)).setClickable(aBoolean);
+            }
+        });
+        homeViewModel.getFirebaseRemoteListener().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                ((Switch) root.findViewById(R.id.sFirebaseRemoteListener)).setChecked(aBoolean);
             }
         });
         homeViewModel.getUsers().observe(getViewLifecycleOwner(), new Observer<HashMap<String, String>>() {
@@ -132,8 +138,6 @@ public class HomeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Activity act = getActivity();
                 if (isChecked) {
-                     homeViewModel.setWebConnected(false);
-                     homeViewModel.setFirebaseConnected(false);
                     if (act instanceof MainActivity) {
                         if (unboxBool(homeViewModel.getmBounded())) {
                             setPersistenceData();
@@ -152,11 +156,8 @@ public class HomeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Activity act = getActivity();
                 if (isChecked) {
-                    homeViewModel.setFirebaseConnected(false);
-                    homeViewModel.setKryoConnected(false);
                     if (act instanceof MainActivity) {
                         setPersistenceData();
-                        homeViewModel.setWebConnected(true);
                         ((MainActivity) act).startWebServices(ipAdress, userName);
                     }
                 } else {
@@ -170,12 +171,9 @@ public class HomeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Activity act = getActivity();
                 if (isChecked) {
-                    homeViewModel.setKryoConnected(false);
-                    homeViewModel.setWebConnected(false);
                     if (act instanceof MainActivity) {
                         setPersistenceData();
-                        homeViewModel.setFirebaseConnected(true);
-                        ((MainActivity) act).startFirebaseServices(ipAdress, userName);
+                        ((MainActivity) act).startFirebaseServices(userName);
                     }
                 } else {
                     if (act instanceof MainActivity) {
@@ -184,13 +182,21 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+        ((Switch) root.findViewById(R.id.sFirebaseRemoteListener)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Activity act = getActivity();
+                if (act instanceof MainActivity) {
+                    homeViewModel.setFirebaseRemoteListener(isChecked);
+                    ((MainActivity) act).setFirebaseRemoteListener();
+
+                }
+            }
+        });
+
 
         ((Switch) root.findViewById(R.id.switchSynced)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-
-                } else {
-                    ((TextView) root.findViewById(R.id.tvKryoPairName)).setText("");
+                if (!isChecked) {
                     Activity act = getActivity();
                     if (act instanceof MainActivity) {
                         ((MainActivity) act).kryoUnfollow();
@@ -208,8 +214,9 @@ public class HomeFragment extends Fragment {
         if (userName.equals(null) || userName.length() < 1) {
             userName = "Android client";
         }
-        if (kryoClients.equals(null)) {
+        if (kryoClients.equals(null) | kryoClients.equals("")) {
             ipAdress = "195.178.94.66";
+            ((EditText) root.findViewById(R.id.etIP)).setText(ipAdress);
         }
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("userName", userName);

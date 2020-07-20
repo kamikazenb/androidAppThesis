@@ -186,7 +186,7 @@ public class TouchFragment extends Fragment {
         synchronized (yValues) {
             yValues.add(new Entry(dataSize, y));
             dataSize++;
-            if (yValues.size() > 30) {
+            if (yValues.size() > 20) {
                 yValues.remove(0);
             }
         }

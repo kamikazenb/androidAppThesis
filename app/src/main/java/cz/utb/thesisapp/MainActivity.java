@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
@@ -16,22 +15,15 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Button;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
-import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 import com.github.clans.fab.FloatingActionMenu;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.FirebaseDatabase;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -291,10 +283,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (mService.kryoClient.isClientConnected()) {
                 addTimeStamp(x, y);
                 mService.kryoClient.sendTouch(x, y, touchType);
-            } else if (mService.webServicesSelected) {
+            } else if (homeViewModel.getWebConnected().getValue()) {
                 addTimeStamp(x, y);
                 mService.restApi.sendTouch(x, y, touchType, token);
-            } else {
+            } else if(homeViewModel.getFirebaseConnected().getValue()){
                 addTimeStamp(x, y);
                 mService.firebaseClient.sendTouch(x, y, touchType, new Date(System.currentTimeMillis()));
             }
@@ -311,7 +303,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (ismBound()) {
             if (!mService.kryoClient.isClientConnected()) {
                 mService.kryoClient.newClient(ip, userName);
+                homeViewModel.setKryoConnected(true);
             }
+        }else {
+            homeViewModel.setKryoConnected(false);
         }
         Thread t = new Thread() {
             public void run() {
@@ -328,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void stopKryo() {
+        homeViewModel.setKryoConnected(false);
         if (ismBound()) {
             if (mService.kryoClient.isClientConnected()) {
                 mService.kryoClient.stopClient();
@@ -337,35 +333,47 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void startWebServices(String ip, String name) {
         if (ismBound()) {
+            homeViewModel.setWebConnected(true);
             TokenGenerator tg = new TokenGenerator();
             token = tg.generateRandom(20);
-            mService.webServicesSelected = true;
             mService.sse.start(ip, token);
             mService.restApi.startRestApi(ip, name, token);
+        }else {
+            homeViewModel.setWebConnected(false);
         }
     }
 
-    public void startFirebaseServices(String ip, String name) {
+    public void startFirebaseServices(String name) {
         if (ismBound()) {
+            homeViewModel.setFirebaseConnected(true);
             TokenGenerator tg = new TokenGenerator();
             token = tg.generateRandom(20);
-            mService.firebaseClient.start(token, name);
-            mService.firebaseSelected = true;
+            mService.firebaseClient.start(homeViewModel.getFirebaseRemoteListener().getValue(), token, name);
+        }else {
+            homeViewModel.setFirebaseConnected(false);
+        }
+    }
+
+    public void setFirebaseRemoteListener(){
+        if(ismBound()){
+            mService.firebaseClient.start(homeViewModel.getFirebaseRemoteListener().getValue());
+        }else {
+            homeViewModel.setFirebaseConnected(false);
         }
     }
 
 
     public void stopWebServices() {
+        homeViewModel.setWebConnected(false);
         if (ismBound()) {
-            mService.webServicesSelected = false;
             mService.sse.stop();
             mService.restApi.stop();
         }
     }
 
     public void stopFirebase() {
+        homeViewModel.setFirebaseConnected(false);
         if (ismBound()) {
-            mService.firebaseSelected = false;
             mService.firebaseClient.stop();
         }
     }
