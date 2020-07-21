@@ -13,9 +13,9 @@ public class GlobalValues {
     public static final int TOUCH_TEST_FINISHED = 4;
     public static final int TOUCH_FAB_TOUCHED = 3;
 
-    public static final int TOUCH_SLEEP_MIN = 80;
+    public static final int TOUCH_SLEEP_MIN = 50;
     public static final int TOUCH_SLEEP_BASE = 250;
-    public static final int TOUCH_ITERATIONS = 20;
+    public static final int TOUCH_ITERATIONS = 500;
     //broadcast filters
     public static final String FILTER_KRYO = "kryo";
     public static final String FILTER_INFO = "info";

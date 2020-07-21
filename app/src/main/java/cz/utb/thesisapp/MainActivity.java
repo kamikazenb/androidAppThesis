@@ -53,6 +53,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import cz.utb.thesisapp.contentProvider.CSVWriter;
 import cz.utb.thesisapp.contentProvider.DbHelper;
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
     private String token;
     private Firebase firebase;
+    private final static Lock lock = new ReentrantLock();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -256,14 +259,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mService.restApi.sendTouch(x, y, touchType, token);
             } else if (homeViewModel.getFirebaseConnected().getValue()) {
                 addTimeStamp(x, y);
-                mService.firebaseClient.sendTouch(x, y, touchType, new Date(System.currentTimeMillis()));
+                mService.firebaseClient.sendTouch(x, y, touchType);
+
+
             }
         }
     }
 
     public void addTimeStamp(float x, float y) {
-        Float z = x + y;
-        operation.put(z.hashCode(), new Date(System.currentTimeMillis()));
+    /*    Float z = x + y;
+        operation.put(z.hashCode(), new Date(System.currentTimeMillis()));*/
     }
 
 

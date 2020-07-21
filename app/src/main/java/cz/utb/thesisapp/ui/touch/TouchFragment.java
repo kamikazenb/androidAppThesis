@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -150,6 +151,7 @@ public class TouchFragment extends Fragment {
                 switch (integer) {
                     case TOUCH_START_TEST:
                         Log.d(TAG, "onChanged: ~~TOUCH_START_TEST");
+                        Debug.startMethodTracing("sample"+df.format(new Date()));
                         if (runningTask != null) {
                             runningTask.cancel(true);
                         }
@@ -158,6 +160,7 @@ public class TouchFragment extends Fragment {
                         touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_BREAK_TEST:
+                        Debug.stopMethodTracing();
                         Log.d(TAG, "onChanged: ~~TOUCH_BREAK_TEST");
                         if (runningTask != null) {
                             runningTask.cancel(true);
@@ -165,6 +168,7 @@ public class TouchFragment extends Fragment {
                         touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_TEST_FINISHED:
+                        Debug.stopMethodTracing();
                         Activity act = getActivity();
                         if (act instanceof MainActivity) {
                             ((MainActivity) act).exportDB();
@@ -175,7 +179,8 @@ public class TouchFragment extends Fragment {
                         }catch (Exception e){
                             Log.d(TAG, "onChanged: ~~"+e);
                         }
-
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        System.exit(1);
                         touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_NO_TEST:
@@ -207,7 +212,7 @@ public class TouchFragment extends Fragment {
                                 }
                             });
                         } catch (Exception e) {
-                            e.printStackTrace();
+//                            e.printStackTrace();
                         }
                     }
                 }
@@ -345,7 +350,7 @@ public class TouchFragment extends Fragment {
                             0));
 
                     double percentage = Math.abs(Math.sin(Math.toRadians((double) i)));
-                    Log.d(TAG, "doInBackground: ~~" + percentage);
+//                    Log.d(TAG, "doInBackground: ~~" + percentage);
                     Thread.sleep(TOUCH_SLEEP_MIN + ((int) (TOUCH_SLEEP_BASE * percentage)));
                 } catch (InterruptedException e) {
                     // We were cancelled; stop sleeping!
