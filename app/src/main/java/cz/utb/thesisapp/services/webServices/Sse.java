@@ -36,7 +36,7 @@ public class Sse {
     ServerSentEvent.Listener listener = new ServerSentEvent.Listener() {
         @Override
         public void onOpen(ServerSentEvent sse, Response response) {
-            Log.d(TAG, "onOpen: ~~");
+            Log.i(TAG, "onOpen: ~~");
             broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "onOpen");
         }
 
@@ -59,30 +59,30 @@ public class Sse {
 
         @Override
         public void onComment(ServerSentEvent sse, String comment) {
-            Log.d(TAG, "onComment: ~~");
+            Log.i(TAG, "onComment: ~~");
         }
 
         @Override
         public boolean onRetryTime(ServerSentEvent sse, long milliseconds) {
-            Log.d(TAG, "onRetryTime: ~~");
+            Log.i(TAG, "onRetryTime: ~~");
             return false;
         }
 
         @Override
         public boolean onRetryError(ServerSentEvent sse, Throwable throwable, Response response) {
-            Log.d(TAG, "onRetryError: ~~" + throwable);
+            Log.i(TAG, "onRetryError: ~~" + throwable);
             return false;
         }
 
         @Override
         public void onClosed(ServerSentEvent sse) {
-            Log.d(TAG, "onClosed: ~~");
+            Log.i(TAG, "onClosed: ~~");
             broadcast.sendValue(FILTER_INFO, EXTRA_USER_INFO, "Web Services: connection NA");
         }
 
         @Override
         public Request onPreRetry(ServerSentEvent sse, Request originalRequest) {
-            Log.d(TAG, "onPreRetry: ~~");
+            Log.i(TAG, "onPreRetry: ~~");
             return null;
         }
     };
@@ -96,7 +96,7 @@ public class Sse {
     public void start(String ipAddress, String token) {
         request = new Request.Builder().url("http://" + ipAddress + API_PORT + API_SSE + "/" + token).build();
         okSse = new OkSse();
-        Log.d(TAG, "start: ~~startSSE");
+        Log.i(TAG, "start: ~~startSSE");
         Thread t = new Thread() {
             public void run() {
                 sse = okSse.newServerSentEvent(request, listener);

@@ -42,7 +42,7 @@ public class Broadcast {
      * send to broadcast object of type: <br>
      * String <br>Integer <br> Boolean <br> Float <br> HashMap K-String V-String
      *
-     * @param value throws Log.d ~~ error if incomparable type
+     * @param value throws Log.i ~~ error if incomparable type
      */
     public <T> void sendValue(String filter, String extraName, T value) {
         Intent i = new Intent(filter);
@@ -60,7 +60,7 @@ public class Broadcast {
             }
             LocalBroadcastManager.getInstance(myService).sendBroadcast(i);
         } catch (ClassCastException e) {
-            Log.d(TAG, "sendValue: ~~" + e);
+            Log.i(TAG, "sendValue: ~~" + e);
         }
 
     }

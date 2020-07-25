@@ -64,7 +64,7 @@ public class GlobalValues {
         public Date clientReceived;
     }
 
-    public static final String API_PORT = ":8080";
+    public static final String API_PORT = ":50202";
     public static final String API_REST = "/rest";
     public static final String API_CLIENT = "/client";
     public static final String API_TOUCH = "/touch";

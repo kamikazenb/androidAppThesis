@@ -1,5 +1,8 @@
 package cz.utb.thesisapp;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -9,9 +12,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
@@ -29,6 +34,7 @@ import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
 import androidx.annotation.LongDef;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -44,13 +50,16 @@ import androidx.appcompat.widget.Toolbar;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -90,6 +99,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private Firebase firebase;
     private final static Lock lock = new ReentrantLock();
 
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,14 +126,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });*/
         SpeedDialView speedDialView = findViewById(R.id.speedDial);
         speedDialView.addActionItem(
-                new SpeedDialActionItem.Builder(R.id.fab_start_test, R.drawable.ic_network_check_white_36dp).setLabel("Start test")
+                new SpeedDialActionItem.Builder(R.id.fab_start_test, R.drawable.ic_network_check_white_36dp).setLabel("test")
                         .create());
         speedDialView.setOnActionSelectedListener(new SpeedDialView.OnActionSelectedListener() {
             @Override
             public boolean onActionSelected(SpeedDialActionItem actionItem) {
                 switch (actionItem.getId()) {
                     case R.id.fab_start_test:
-                        Log.d(TAG, "onActionSelected: ~~" + actionItem.getId());
+
+                        Log.i(TAG, "onActionSelected: ~~" + actionItem.getId());
                         touchViewModel.setTest(TOUCH_FAB_TOUCHED);
                         break;
                     default:
@@ -141,11 +157,65 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         currentlyShownTag = HomeFragment.class.getName();
 
 
-        Log.d(TAG, "onCreate: ~~");
+        Log.i(TAG, "onCreate: ~~");
 
         init();
+        Log.i(TAG, "onCreate: ~~read Usage"+readUsage());
 
+    }
+    private float readUsage() {
+        try {
+            RandomAccessFile reader = new RandomAccessFile("/proc/stat", "r");
+            String load = reader.readLine();
 
+            String[] toks = load.split(" ");
+
+            long idle1 = Long.parseLong(toks[5]);
+            long cpu1 = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
+                    + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+
+            try {
+                Thread.sleep(360);
+            } catch (Exception e) {}
+
+            reader.seek(0);
+            load = reader.readLine();
+            reader.close();
+
+            toks = load.split(" ");
+
+            long idle2 = Long.parseLong(toks[5]);
+            long cpu2 = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
+                    + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+
+            return (float)(cpu2 - cpu1) / ((cpu2 + idle2) - (cpu1 + idle1));
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    /**
+     * Checks if the app has permission to write to device storage
+     *
+     * If the app does not has permission then the user will be prompted to grant permissions
+     *
+     * @param activity
+     */
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
     }
 
 
@@ -233,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (intent.hasExtra(EXTRA_USERS)) {
                 try {
                     HashMap<String, String> hashMap = (HashMap<String, String>) intent.getSerializableExtra("users");
-                    Log.d(TAG, "onReceive: ~~1" + hashMap.toString());
+                    Log.i(TAG, "onReceive: ~~1" + hashMap.toString());
                     homeViewModel.setUsers(hashMap);
                 } catch (Exception e) {
 
@@ -242,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             if (intent.hasExtra(EXTRA_CONNECTION_CLOSED)) {
                 homeViewModel.setKryoConnected(false);
-                Log.d(TAG, "onReceive: ~~in if" + intent.getExtras().getString(EXTRA_CONNECTION_CLOSED));
+                Log.i(TAG, "onReceive: ~~in if" + intent.getExtras().getString(EXTRA_CONNECTION_CLOSED));
                 Toast.makeText(getApplicationContext(), intent.getExtras().getString(EXTRA_CONNECTION_CLOSED), Toast.LENGTH_SHORT).show();
             }
         }
@@ -364,7 +434,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void startService() {
-        Log.d(TAG, "run: ~~ " + Thread.currentThread().getId());
+        Log.i(TAG, "run: ~~ " + Thread.currentThread().getId());
         Intent i = new Intent(this, MyService.class);
         startService(i);
         bindService();
@@ -385,17 +455,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onStart() {
         super.onStart();
         startService();
-        Log.d(TAG, "onStart: ~~");
+        Log.i(TAG, "onStart: ~~");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop: ~~");
+        Log.i(TAG, "onStop: ~~");
         try {
             unbindService(connection);
         } catch (Exception e) {
-            Log.d(TAG, "~~" + e);
+            Log.i(TAG, "~~" + e);
         }
 
         mBound = false;
@@ -447,7 +517,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         LocalBroadcastManager.getInstance(this).registerReceiver(infoReceiver, new IntentFilter(FILTER_INFO));
         LocalBroadcastManager.getInstance(this).registerReceiver(webReceiver, new IntentFilter(FILTER_WEB));
         startService();
-        Log.d(TAG, "onResume: ~~");
+        Log.i(TAG, "onResume: ~~");
         //Starts a new or restarts an existing Loader in this manager
         getLoaderManager().restartLoader(0, null, this);
         super.onResume();
@@ -475,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void exportDB() {
-        Log.d(TAG, "exportDB: ~~starting");
+        Log.i(TAG, "exportDB: ~~starting");
         DbHelper dbHelper = new DbHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -499,10 +569,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             csvWrite.close();
             curCSV.close();
             dbHelper.onUpgrade(db, 0, 1);
-            Log.d(TAG, "exportDB: ~~Exported");
+            Log.i(TAG, "exportDB: ~~Exported");
         } catch (Exception sqlEx) {
-            Log.d(TAG, "exportDB: ~~" + sqlEx.getMessage(), sqlEx);
-//            Log.d(TAG, sqlEx.getMessage(), sqlEx);
+            Log.i(TAG, "exportDB: ~~" + sqlEx.getMessage(), sqlEx);
+//            Log.i(TAG, sqlEx.getMessage(), sqlEx);
         }
     }
 
@@ -540,7 +610,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 touch.clientCreated = dateFormat.parse(cursor.getString(3));
                 touch.clientReceived = dateFormat.parse(cursor.getString(4));
             } catch (ParseException e) {
-                Log.d(TAG, "setViewModelTouch: ~~" + e);
+                Log.i(TAG, "setViewModelTouch: ~~" + e);
                 touch.clientCreated = new Date(System.currentTimeMillis());
                 touch.clientReceived = new Date(System.currentTimeMillis());
             }

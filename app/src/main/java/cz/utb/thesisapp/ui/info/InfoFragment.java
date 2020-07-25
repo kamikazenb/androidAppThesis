@@ -133,7 +133,7 @@ public class InfoFragment extends Fragment {
             try {
                 data = new LineData(dataSets);
             } catch (Exception e) {
-                Log.d(TAG, "onCreateView: ~~" + e);
+                Log.i(TAG, "onCreateView: ~~" + e);
             }
             Description description = new Description();
             description.setText("");
@@ -145,7 +145,7 @@ public class InfoFragment extends Fragment {
             mChart.setDescription(description);
             mChart.setData(data);
         }
-        Log.d(TAG, "onCreateView: ~~");
+        Log.i(TAG, "onCreateView: ~~");
         return root;
     }
 
@@ -187,7 +187,7 @@ public class InfoFragment extends Fragment {
             mChart.notifyDataSetChanged();
             mChart.postInvalidate();
         } catch (ConcurrentModificationException e) {
-            Log.d(TAG, "plotException: ~~"+e);
+            Log.i(TAG, "plotException: ~~"+e);
         }
 
     }
@@ -196,7 +196,7 @@ public class InfoFragment extends Fragment {
     public void onResume() {
         startPlot();
         super.onResume();
-        Log.d(TAG, "onResume: ~~");
+        Log.i(TAG, "onResume: ~~");
     }
 
     @Override
@@ -205,12 +205,12 @@ public class InfoFragment extends Fragment {
             thread.interrupt();
         }
         super.onPause();
-        Log.d(TAG, "onPause: ~~");
+        Log.i(TAG, "onPause: ~~");
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop: ~~");
+        Log.i(TAG, "onStop: ~~");
     }
 }

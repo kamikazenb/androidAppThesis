@@ -62,8 +62,8 @@ public class RestApi {
             e.printStackTrace();
         }
 
-        Log.d(TAG, "sendTouch: ~~" + joSend.toString());
-        Log.d(TAG, "sendTouch: ~~" + url+API_CLIENT);
+        Log.i(TAG, "sendTouch: ~~" + joSend.toString());
+        Log.i(TAG, "sendTouch: ~~" + url+API_CLIENT);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url+API_CLIENT,
                 new Response.Listener<String>() {
                     @Override
@@ -111,7 +111,7 @@ public class RestApi {
             e.printStackTrace();
         }
 
-        Log.d(TAG, "sendTouch: ~~" + joSend.toString());
+        Log.i(TAG, "sendTouch: ~~" + joSend.toString());
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url+API_TOUCH,
                 new Response.Listener<String>() {

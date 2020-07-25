@@ -61,10 +61,10 @@ public class MyContentProvider extends ContentProvider {
         queryBuilder.setTables(DB_TABLE_NAME);
         switch (uriMatcher.match(uri)) {
             case ALL_TOUCHES:
-//                Log.d(TAG, "query: ~~ do nothing");
+//                Log.i(TAG, "query: ~~ do nothing");
                 break;
             case SINGLE_TOUCH:
-//                Log.d(TAG, "query: ~~ do all");
+//                Log.i(TAG, "query: ~~ do all");
                 String id = uri.getLastPathSegment(); //tu bude asi chyba
                 queryBuilder.appendWhere(DB_CLIENT_CREATED + "=" + id);
                 break;
@@ -126,7 +126,7 @@ public class MyContentProvider extends ContentProvider {
         try {
             getContext().getContentResolver().notifyChange(uri, null);
         } catch (NullPointerException e) {
-            Log.d(TAG, "insert: ~~" + e);
+            Log.i(TAG, "insert: ~~" + e);
         }
         return Uri.parse(CONTENT_URI + "/" + id);
     }

@@ -204,7 +204,7 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-        Log.d(TAG, "onCreateView: ~~");
+        Log.i(TAG, "onCreateView: ~~");
         return root;
     }
 
@@ -242,13 +242,13 @@ public class HomeFragment extends Fragment {
                 public void onItemSelected(AdapterView<?> parent, View view,
                                            int position, long id) {
                     if (position == 0) {
-                        Log.d(TAG, "onItemSelected: ~~0");
+                        Log.i(TAG, "onItemSelected: ~~0");
                     } else {
-                        Log.d(TAG, "onItemSelected: ~~else");
+                        Log.i(TAG, "onItemSelected: ~~else");
                         try {
                             Activity act = getActivity();
                             if (act instanceof MainActivity) {
-                                Log.d(TAG, "onItemSelected: ~~" + keys.get(position - 1));
+                                Log.i(TAG, "onItemSelected: ~~" + keys.get(position - 1));
                                 ((MainActivity) act).kryoRequestFollow(keys.get(position - 1));
                             }
                         } catch (Exception e) {
@@ -269,19 +269,19 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume: ~~");
+        Log.i(TAG, "onResume: ~~");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause: ~~");
+        Log.i(TAG, "onPause: ~~");
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop: ~~");
+        Log.i(TAG, "onStop: ~~");
     }
 
     private boolean unboxBool(MutableLiveData<Boolean> a) {

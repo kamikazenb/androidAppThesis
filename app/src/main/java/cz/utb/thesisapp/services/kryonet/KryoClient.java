@@ -46,14 +46,14 @@ public class KryoClient {
             }
 
             public void disconnected(Connection connection) {
-                Log.d(TAG, "disconnected: ~~mainClient ");
+                Log.i(TAG, "disconnected: ~~mainClient ");
                 setClientsConnected(false);
             }
 
             public void received(Connection connection, Object object) {
 
                 if (object instanceof Network.RegisteredUsers) {
-                    Log.d(TAG, "received: ~~if (object instanceof Network.RegisteredUsers) {");
+                    Log.i(TAG, "received: ~~if (object instanceof Network.RegisteredUsers) {");
                     NetworkRegisteredUsers(connection, object, client);
                 }
                 if (object instanceof Network.Touch) {
@@ -66,7 +66,7 @@ public class KryoClient {
                             ((Network.Touch) object).touchType);
                 }
                 if (object instanceof Network.UseDatabase) {
-                    Log.d(TAG, "received: ~~useDatabase");
+                    Log.i(TAG, "received: ~~useDatabase");
                     broadcast.sendValue(FILTER_KRYO, EXTRA_KROYSERVER_USE_DATABASE, ((Network.UseDatabase) object).useDatabase);
                 }
 

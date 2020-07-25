@@ -23,7 +23,7 @@ public class SpeedTest {
     }
 
     public void startDownload() {
-        Log.d(TAG, "startDownload: ~~");
+        Log.i(TAG, "startDownload: ~~");
         new DownloadSpeedTask().execute();
     }
 

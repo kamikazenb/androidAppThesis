@@ -1,22 +1,28 @@
 package cz.utb.thesisapp.ui.touch;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Debug;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -30,6 +36,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,9 +70,10 @@ public class TouchFragment extends Fragment {
     volatile LineData data;
     volatile int dataSize = 1;
     boolean threadRun = true;
-    private Thread thread;
     SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     AsyncTask<Void, Void, Integer> runningTask;
+    private Thread thread;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -128,7 +137,7 @@ public class TouchFragment extends Fragment {
                     for (GlobalValues.Touch touch : touches) {
                         Activity act = getActivity();
                         if (act instanceof MainActivity) {
-                           /* Log.d(TAG, "onChanged: ~~" + touch.touchType + "\n" +
+                           /* Log.i(TAG, "onChanged: ~~" + touch.touchType + "\n" +
                                     "clientCreated: " + df.format(touch.clientCreated.getTime() + ((MainActivity) act).difference) + "\n"
                                     + "serverReceived:" + df.format(touch.serverReceived) + "\n" +
                                     "clientReceived:" + df.format(touch.clientReceived.getTime() + ((MainActivity) act).difference));*/
@@ -138,7 +147,7 @@ public class TouchFragment extends Fragment {
                         dvRemoteApp.remoteTouchEvent(touch.touchType, touch.x, touch.y);
                     }
                 } catch (Exception e) {
-                    Log.d(TAG, "onChanged: ~~" + e);
+                    Log.i(TAG, "onChanged: ~~" + e);
                 }
 
             }
@@ -147,37 +156,45 @@ public class TouchFragment extends Fragment {
         touchViewModel.getTest().observe(getViewLifecycleOwner(), new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-                Log.d(TAG, "onChanged: ~~");
+                Log.i(TAG, "onChanged: ~~");
                 switch (integer) {
                     case TOUCH_START_TEST:
-                        Log.d(TAG, "onChanged: ~~TOUCH_START_TEST");
-                        Debug.startMethodTracing("sample"+df.format(new Date()));
+                        Log.i(TAG, "onChanged: ~~TOUCH_START_TEST");
+
+//                        Debug.startme
+//                        Debug.startMethodTracing("sample"+df.format(new Date()), 102000400);
+//                        Debug.startMethodTracingSampling("sample"+df.format(new Date()), 10002400, 10);
                         if (runningTask != null) {
                             runningTask.cancel(true);
                         }
                         runningTask = new TestTask();
                         runningTask.execute();
-                        touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_BREAK_TEST:
-                        Debug.stopMethodTracing();
-                        Log.d(TAG, "onChanged: ~~TOUCH_BREAK_TEST");
+
+//                        Debug.stopMethodTracing();
+                        Log.i(TAG, "onChanged: ~~TOUCH_BREAK_TEST");
+
                         if (runningTask != null) {
                             runningTask.cancel(true);
                         }
                         touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_TEST_FINISHED:
-                        Debug.stopMethodTracing();
+//                        Debug.stopMethodTracing();
                         Activity act = getActivity();
                         if (act instanceof MainActivity) {
+                            MediaPlayer mp = MediaPlayer.create(act, R.raw.notification);
+                            mp.start();
+                            Vibrator vibe = (Vibrator) act.getSystemService(Context.VIBRATOR_SERVICE);
+                            vibe.vibrate(100);
                             ((MainActivity) act).exportDB();
                         }
                         try {
                             dvThisApp.clear();
                             dvRemoteApp.clear();
-                        }catch (Exception e){
-                            Log.d(TAG, "onChanged: ~~"+e);
+                        } catch (Exception e) {
+                            Log.i(TAG, "onChanged: ~~" + e);
                         }
                         android.os.Process.killProcess(android.os.Process.myPid());
                         System.exit(1);
@@ -192,6 +209,7 @@ public class TouchFragment extends Fragment {
 
         return root;
     }
+
 
     public void startPlot() {
         if (thread != null) {
@@ -220,6 +238,7 @@ public class TouchFragment extends Fragment {
         });
         thread.start();
     }
+
 
     private void addDataToChart(long difference) {
         final float y = (float) difference;
@@ -298,7 +317,7 @@ public class TouchFragment extends Fragment {
     public void onResume() {
         startPlot();
         super.onResume();
-        Log.d(TAG, "onResume: ~~");
+        Log.i(TAG, "onResume: ~~");
     }
 
     @Override
@@ -307,7 +326,7 @@ public class TouchFragment extends Fragment {
             thread.interrupt();
         }
         super.onPause();
-        Log.d(TAG, "onPause: ~~");
+        Log.i(TAG, "onPause: ~~");
     }
 
     @Override
@@ -318,13 +337,14 @@ public class TouchFragment extends Fragment {
             thread.interrupt();
         }
         super.onStop();
-        Log.d(TAG, "onStop: ~~");
+        Log.i(TAG, "onStop: ~~");
     }
+
 
     private class TestTask extends AsyncTask<Void, Void, Integer> {
         protected Integer doInBackground(Void... params) {
-            int canvasH = dvThisApp.getCanvasH();
-            int canvasW = dvThisApp.getCanvasW();
+            final int canvasH = dvThisApp.getCanvasH();
+            final int canvasW = dvThisApp.getCanvasW();
             boolean started = false;
             for (int i = 0; i < TOUCH_ITERATIONS; i++) {
                 if (isCancelled()) {
@@ -342,15 +362,22 @@ public class TouchFragment extends Fragment {
                             started = false;
                         }
                     }
-                    dvThisApp.onTouchEvent(MotionEvent.obtain(System.currentTimeMillis(),
-                            System.currentTimeMillis(),
-                            action,
-                            canvasW * (float) (new Random().nextDouble()),
-                            canvasH * (float) (new Random().nextDouble()),
-                            0));
+                    final int sendAction = action;
+                    (getActivity()).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dvThisApp.onTouchEvent(MotionEvent.obtain(System.currentTimeMillis(),
+                                    System.currentTimeMillis(),
+                                    sendAction,
+                                    canvasW * (float) (new Random().nextDouble()),
+                                    canvasH * (float) (new Random().nextDouble()),
+                                    0));
+
+                        }
+                    });
 
                     double percentage = Math.abs(Math.sin(Math.toRadians((double) i)));
-//                    Log.d(TAG, "doInBackground: ~~" + percentage);
+//                    Log.i(TAG, "doInBackground: ~~" + percentage);
                     Thread.sleep(TOUCH_SLEEP_MIN + ((int) (TOUCH_SLEEP_BASE * percentage)));
                 } catch (InterruptedException e) {
                     // We were cancelled; stop sleeping!
@@ -362,7 +389,7 @@ public class TouchFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Integer result) {
-            Log.d(TAG, "onPostExecute: ~~"+result);
+            Log.i(TAG, "onPostExecute: ~~" + result);
             touchViewModel.setTest(result);
             // txt.setText(result);
             // You might want to change "executed" for the returned string

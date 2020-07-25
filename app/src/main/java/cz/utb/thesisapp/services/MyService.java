@@ -61,14 +61,14 @@ public class MyService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        Log.d(TAG, "onTaskRemoved: called.");
+        Log.i(TAG, "onTaskRemoved: called.");
         stopSelf();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: called.");
+        Log.i(TAG, "onDestroy: called.");
     }
 
     public void saveToLocalDatabase(Date created, Date clientReceived, float x, float y, String touchType) {
