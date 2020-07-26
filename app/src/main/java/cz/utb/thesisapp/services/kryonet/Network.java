@@ -22,6 +22,8 @@ public class Network {
         kryo.register(UseDatabase.class);
         kryo.register(java.util.Date.class);
         kryo.register(FollowClient.class);
+        kryo.register(Touches.class);
+        kryo.register(ArrayList.class);
     }
 
     static public class UseDatabase {
@@ -48,10 +50,14 @@ public class Network {
     }
 
     static public class Touch {
-        float x;
-        float y;
-        String touchType;
-        Date clientCreated;
+        public float x;
+        public float y;
+        public String touchType;
+        public Date clientCreated;
+    }
+
+    static public class Touches {
+        public ArrayList<Touch> values;
     }
 
 }

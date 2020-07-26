@@ -1,6 +1,7 @@
 package cz.utb.thesisapp.services.webServices;
 
 import android.app.Service;
+
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
@@ -15,11 +16,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.utb.thesisapp.GlobalValues;
 import cz.utb.thesisapp.services.Broadcast;
+import cz.utb.thesisapp.services.kryonet.Network;
 
 import static cz.utb.thesisapp.GlobalValues.API_CLIENT;
 import static cz.utb.thesisapp.GlobalValues.API_REST;
@@ -35,6 +39,7 @@ public class RestApi {
     private String url = "";
     private Service service;
     private Broadcast broadcast;
+    private String token;
     SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
 
     public RestApi(Service service, Broadcast broadcast) {
@@ -43,9 +48,10 @@ public class RestApi {
     }
 
     public void startRestApi(String ipAddress, String name, String token) {
-        url = "http://" + ipAddress + API_PORT+API_REST;
+        url = "http://" + ipAddress + API_PORT + API_REST;
         mQueue = Volley.newRequestQueue(service);
         mQueue.start();
+        this.token = token;
         sendClient(name, token);
     }
 
@@ -63,8 +69,8 @@ public class RestApi {
         }
 
         Log.i(TAG, "sendTouch: ~~" + joSend.toString());
-        Log.i(TAG, "sendTouch: ~~" + url+API_CLIENT);
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url+API_CLIENT,
+        Log.i(TAG, "sendTouch: ~~" + url + API_CLIENT);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url + API_CLIENT,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -94,15 +100,21 @@ public class RestApi {
 
     }
 
-    public void sendTouch(float x, float y, String touchType, String token) {
+    public void sendTouch(ArrayList<Network.Touch> touches) {
+        for (Network.Touch touch : touches) {
+            apiHandler(touch);
+        }
+    }
+
+    public void apiHandler(Network.Touch touch) {
         JSONObject joTouch = new JSONObject();
         JSONObject joClient = new JSONObject();
         JSONObject joSend = new JSONObject();
         try {
-            joTouch.put("x", x);
-            joTouch.put("y", y);
-            joTouch.put("touchType", touchType);
-            joTouch.put("clientCreated", df.format(new Date(System.currentTimeMillis())));
+            joTouch.put("x", touch.x);
+            joTouch.put("y", touch.y);
+            joTouch.put("touchType", touch.touchType);
+            joTouch.put("clientCreated", df.format(touch.clientCreated));
             joClient.put("token", token);
             joClient.put("name", "");
             joSend.put("touch", joTouch);
@@ -113,7 +125,7 @@ public class RestApi {
 
         Log.i(TAG, "sendTouch: ~~" + joSend.toString());
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url+API_TOUCH,
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url + API_TOUCH,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -122,6 +134,7 @@ public class RestApi {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+
                     }
 
                 }) {
@@ -139,6 +152,6 @@ public class RestApi {
         };
         // Add the request to the RequestQueue.
         mQueue.add(stringRequest);
-
     }
+
 }

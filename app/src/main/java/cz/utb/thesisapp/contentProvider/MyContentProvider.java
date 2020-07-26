@@ -13,17 +13,21 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import static cz.utb.thesisapp.GlobalValues.DB_CLIENT_CREATED;
-import static cz.utb.thesisapp.GlobalValues.DB_TABLE_NAME;
+import static cz.utb.thesisapp.GlobalValues.DB_CREATED;
+import static cz.utb.thesisapp.GlobalValues.DB_TABLE_LOCAL;
+import static cz.utb.thesisapp.GlobalValues.DB_TABLE_REMOTE;
 
 public class MyContentProvider extends ContentProvider {
     private static final String TAG = "ContentProvider";
     private DbHelper dbHelper;
-    private static final int ALL_TOUCHES = 1;
-    private static final int SINGLE_TOUCH = 2;
+    private static final int ALL_TOUCHES_REMOTE = 1;
+    private static final int SINGLE_TOUCH_REMOTE = 2;
+    private static final int ALL_TOUCHES_LOCAL = 3;
+    private static final int SINGLE_TOUCH_LOCAL = 4;
 
     private static final String AUTHORITY = "cz.utb.thesisapp.contentProvider";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + DB_TABLE_NAME);
+    public static final Uri CONTENT_REMOTE_URI = Uri.parse("content://" + AUTHORITY + "/" + DB_TABLE_REMOTE);
+    public static final Uri CONTENT_LOCAL_URI = Uri.parse("content://" + AUTHORITY + "/" + DB_TABLE_LOCAL);
     /*
     a content URI pattern matches content URIs using wildcard characters:
     *: matches a String of any valid characters of any length
@@ -33,8 +37,10 @@ public class MyContentProvider extends ContentProvider {
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH); //NO_MATCH is a constant with value -1
-        uriMatcher.addURI(AUTHORITY, DB_TABLE_NAME, ALL_TOUCHES);
-        uriMatcher.addURI(AUTHORITY, DB_TABLE_NAME + "/#", SINGLE_TOUCH);
+        uriMatcher.addURI(AUTHORITY, DB_TABLE_REMOTE, ALL_TOUCHES_REMOTE);
+        uriMatcher.addURI(AUTHORITY, DB_TABLE_LOCAL, ALL_TOUCHES_LOCAL);
+        uriMatcher.addURI(AUTHORITY, DB_TABLE_REMOTE + "/#", SINGLE_TOUCH_REMOTE);
+        uriMatcher.addURI(AUTHORITY, DB_TABLE_LOCAL + "/#", SINGLE_TOUCH_LOCAL);
     }
 
 
@@ -58,16 +64,22 @@ public class MyContentProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        queryBuilder.setTables(DB_TABLE_NAME);
         switch (uriMatcher.match(uri)) {
-            case ALL_TOUCHES:
-//                Log.i(TAG, "query: ~~ do nothing");
+            case ALL_TOUCHES_REMOTE:
+                queryBuilder.setTables(DB_TABLE_REMOTE);
+//                Log.i(TAG, "query: ~~  ALL_TOUCHES_REMOTE");
                 break;
-            case SINGLE_TOUCH:
-//                Log.i(TAG, "query: ~~ do all");
+            case ALL_TOUCHES_LOCAL:
+                queryBuilder.setTables(DB_TABLE_LOCAL);
+//                Log.i(TAG, "query: ~~  ALL_TOUCHES_LOCAL");
+                break;
+            case SINGLE_TOUCH_REMOTE:
+                queryBuilder.setTables(DB_TABLE_REMOTE);
+//                Log.i(TAG, "query: ~~ SINGLE_TOUCH_REMOTE");
                 String id = uri.getLastPathSegment(); //tu bude asi chyba
-                queryBuilder.appendWhere(DB_CLIENT_CREATED + "=" + id);
+                queryBuilder.appendWhere(DB_CREATED + "=" + id);
                 break;
+
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
@@ -98,10 +110,14 @@ public class MyContentProvider extends ContentProvider {
         the data retrieved from a give URI
           */
         switch (uriMatcher.match(uri)) {
-            case ALL_TOUCHES:
-                return "vnd.android.cursor.dir/vnd." + AUTHORITY + "." + DB_TABLE_NAME;
-            case SINGLE_TOUCH:
-                return "vnd.android.cursor.item/vnd." + AUTHORITY + "." + DB_TABLE_NAME;
+            case ALL_TOUCHES_REMOTE:
+                return "vnd.android.cursor.dir/vnd." + AUTHORITY + "." + DB_TABLE_REMOTE;
+            case ALL_TOUCHES_LOCAL:
+                return "vnd.android.cursor.dir/vnd." + AUTHORITY + "." + DB_TABLE_LOCAL;
+            case SINGLE_TOUCH_REMOTE:
+                return "vnd.android.cursor.item/vnd." + AUTHORITY + "." + DB_TABLE_REMOTE;
+            case SINGLE_TOUCH_LOCAL:
+                return "vnd.android.cursor.item/vnd." + AUTHORITY + "." + DB_TABLE_LOCAL;
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
@@ -115,20 +131,26 @@ public class MyContentProvider extends ContentProvider {
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String tableName;
         switch (uriMatcher.match(uri)) {
-            case ALL_TOUCHES:
+            case ALL_TOUCHES_REMOTE:
+                tableName = DB_TABLE_REMOTE;
+                //do nothing
+                break;
+            case ALL_TOUCHES_LOCAL:
+                tableName = DB_TABLE_LOCAL;
                 //do nothing
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
-        long id = db.insert(DB_TABLE_NAME, null, contentValues);
+        long id = db.insert(tableName, null, contentValues);
         try {
             getContext().getContentResolver().notifyChange(uri, null);
         } catch (NullPointerException e) {
-            Log.i(TAG, "insert: ~~" + e);
+//            Log.i(TAG, "insert: ~~" + e);
         }
-        return Uri.parse(CONTENT_URI + "/" + id);
+        return Uri.parse(uri + "/" + id);
     }
 
     /*
@@ -139,19 +161,19 @@ public class MyContentProvider extends ContentProvider {
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         switch (uriMatcher.match(uri)) {
-            case ALL_TOUCHES:
+            case ALL_TOUCHES_REMOTE:
                 //do nothing
                 break;
-            case SINGLE_TOUCH:
+            case SINGLE_TOUCH_REMOTE:
                 String id = uri.getLastPathSegment();
-                selection = DB_CLIENT_CREATED + "=" + id
+                selection = DB_CREATED + "=" + id
                         + (!TextUtils.isEmpty(selection) ?
                         "AND (" + selection + ')' : "");
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
-        int deleteCount = db.delete(DB_TABLE_NAME, selection, selectionArgs);
+        int deleteCount = db.delete(DB_TABLE_REMOTE, selection, selectionArgs);
         getContext().getContentResolver().notifyChange(uri, null);
         return deleteCount;
     }
@@ -165,19 +187,19 @@ public class MyContentProvider extends ContentProvider {
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String selection, @Nullable String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         switch (uriMatcher.match(uri)) {
-            case ALL_TOUCHES:
+            case ALL_TOUCHES_REMOTE:
                 //do nothing
                 break;
-            case SINGLE_TOUCH:
+            case SINGLE_TOUCH_REMOTE:
                 String id = uri.getLastPathSegment();
-                selection = DB_CLIENT_CREATED + "=" + id
+                selection = DB_CREATED + "=" + id
                         + (!TextUtils.isEmpty(selection) ?
                         "AND (" + selection + ')' : "");
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
-        int updateCount = db.update(DB_TABLE_NAME, contentValues, selection, selectionArgs);
+        int updateCount = db.update(DB_TABLE_REMOTE, contentValues, selection, selectionArgs);
         getContext().getContentResolver().notifyChange(uri, null);
         return updateCount;
     }

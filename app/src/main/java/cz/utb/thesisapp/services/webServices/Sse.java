@@ -5,10 +5,8 @@ import android.util.Log;
 import com.here.oksse.OkSse;
 import com.here.oksse.ServerSentEvent;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -44,7 +42,7 @@ public class Sse {
         public void onMessage(ServerSentEvent sse, String id, String event, String message) {
             try {
                 JSONObject jo = new JSONObject(message);
-                myService.saveToLocalDatabase(
+                myService.saveToRemoteDatabase(
                         df.parse(jo.getString("clientCreated")),
                         new Date(System.currentTimeMillis()),
                         (float) jo.getDouble("x"),
@@ -106,6 +104,9 @@ public class Sse {
     }
 
     public void stop() {
-        sse.close();
+        if(sse != null){
+            sse.close();
+        }
+        myService.webservices = false;
     }
 }

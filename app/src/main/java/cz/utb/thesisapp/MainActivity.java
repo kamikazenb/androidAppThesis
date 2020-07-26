@@ -2,7 +2,6 @@ package cz.utb.thesisapp;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -16,27 +15,20 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Debug;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.firebase.client.Firebase;
-import com.github.clans.fab.FloatingActionMenu;
 import com.github.mikephil.charting.data.Entry;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
-import androidx.annotation.LongDef;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
@@ -49,18 +41,12 @@ import androidx.appcompat.widget.Toolbar;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -73,7 +59,6 @@ import cz.utb.thesisapp.services.TokenGenerator;
 import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
-import cz.utb.thesisapp.ui.touch.TouchFragment;
 import cz.utb.thesisapp.ui.touch.TouchViewModel;
 
 import android.app.LoaderManager;
@@ -160,46 +145,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.i(TAG, "onCreate: ~~");
 
         init();
-        Log.i(TAG, "onCreate: ~~read Usage"+readUsage());
 
     }
-    private float readUsage() {
-        try {
-            RandomAccessFile reader = new RandomAccessFile("/proc/stat", "r");
-            String load = reader.readLine();
 
-            String[] toks = load.split(" ");
-
-            long idle1 = Long.parseLong(toks[5]);
-            long cpu1 = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
-                    + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
-
-            try {
-                Thread.sleep(360);
-            } catch (Exception e) {}
-
-            reader.seek(0);
-            load = reader.readLine();
-            reader.close();
-
-            toks = load.split(" ");
-
-            long idle2 = Long.parseLong(toks[5]);
-            long cpu2 = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
-                    + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
-
-            return (float)(cpu2 - cpu1) / ((cpu2 + idle2) - (cpu1 + idle1));
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        return 0;
-    }
 
     /**
      * Checks if the app has permission to write to device storage
-     *
+     * <p>
      * If the app does not has permission then the user will be prompted to grant permissions
      *
      * @param activity
@@ -319,8 +271,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     };
 
     public void sendTouch(float x, float y, String touchType) {
-
-        if (ismBound()) {
+        saveToLocalDatabase(new Date(System.currentTimeMillis()), x, y, touchType);
+      /*  if (ismBound()) {
             if (mService.kryoClient.isClientConnected()) {
                 addTimeStamp(x, y);
                 mService.kryoClient.sendTouch(x, y, touchType);
@@ -332,8 +284,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mService.firebaseClient.sendTouch(x, y, touchType);
 
 
-            }
-        }
+            }*
+        }/
     }
 
     public void addTimeStamp(float x, float y) {
@@ -370,6 +322,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             token = tg.generateRandom(20);
             mService.sse.start(ip, token);
             mService.restApi.startRestApi(ip, name, token);
+            mService.webservices = true;
         } else {
             homeViewModel.setWebConnected(false);
         }
@@ -381,6 +334,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             TokenGenerator tg = new TokenGenerator();
             token = tg.generateRandom(20);
             mService.firebaseClient.start(homeViewModel.getFirebaseRemoteListener().getValue(), token, name);
+            mService.firebase = true;
         } else {
             homeViewModel.setFirebaseConnected(false);
         }
@@ -400,6 +354,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (ismBound()) {
             mService.sse.stop();
             mService.restApi.stop();
+            mService.webservices = false;
         }
     }
 
@@ -407,6 +362,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         homeViewModel.setFirebaseConnected(false);
         if (ismBound()) {
             mService.firebaseClient.stop();
+            mService.firebase = false;
         }
     }
 
@@ -463,6 +419,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onStop();
         Log.i(TAG, "onStop: ~~");
         try {
+            removeOldDB();
+            mService.kryoClient.stopClient();
+            mService.firebaseClient.stop();
+            mService.sse.stop();
             unbindService(connection);
         } catch (Exception e) {
             Log.i(TAG, "~~" + e);
@@ -530,23 +490,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 || super.onSupportNavigateUp();
     }
 
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        String[] projection = {
-                DB_TOUCH_TYPE,
-                DB_X,
-                DB_Y,
-                DB_CLIENT_CREATED,
-                DB_CLIENT_RECEIVED
-        };
-        return new CursorLoader(this,
-                MyContentProvider.CONTENT_URI, projection, null, null, null);
-    }
-
-    public void exportDB() {
-        Log.i(TAG, "exportDB: ~~starting");
+    public void exportDB(String databaseType, Date time) {
+        boolean remoteDatabase = false;
         DbHelper dbHelper = new DbHelper(this);
+
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         File exportDir = new File(context.getExternalFilesDir(null), "");
@@ -554,29 +501,66 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             exportDir.mkdirs();
         }
 
-        File file = new File(exportDir, "test" + dateFormat.format(new Date()) + ".csv");
+        File file = new File(exportDir, dateFormat.format(time) + " " + databaseType + ".csv");
         try {
             file.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-            Cursor curCSV = db.rawQuery("SELECT * FROM " + DB_TABLE_NAME, null);
+            Cursor curCSV = db.rawQuery("SELECT * FROM " + databaseType, null);
             csvWrite.writeNext(curCSV.getColumnNames());
             while (curCSV.moveToNext()) {
                 //Which column you want to exprort
-                String arrStr[] = {curCSV.getString(0), curCSV.getString(1), curCSV.getString(2),
-                        curCSV.getString(3), curCSV.getString(4), curCSV.getString(5),};
+                String[] arrStr;
+                try {
+                    arrStr = new String[]{curCSV.getString(0), curCSV.getString(1), curCSV.getString(2),
+                            curCSV.getString(3), curCSV.getString(4), curCSV.getString(5),};
+                    remoteDatabase = true;
+                } catch (Exception e) {
+                    arrStr = new String[]{curCSV.getString(0), curCSV.getString(1), curCSV.getString(2),
+                            curCSV.getString(3), curCSV.getString(4),};
+                }
                 csvWrite.writeNext(arrStr);
+
             }
             csvWrite.close();
             curCSV.close();
-            dbHelper.onUpgrade(db, 0, 1);
-            Log.i(TAG, "exportDB: ~~Exported");
+            if (remoteDatabase) {
+                removeOldDB();
+                Toast.makeText(getApplicationContext(), "Database exported", Toast.LENGTH_SHORT).show();
+
+            }
+            Log.i(TAG, "exportDB: ~~Exported " + databaseType);
         } catch (Exception sqlEx) {
             Log.i(TAG, "exportDB: ~~" + sqlEx.getMessage(), sqlEx);
 //            Log.i(TAG, sqlEx.getMessage(), sqlEx);
         }
     }
 
+    private void removeOldDB() {
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        dbHelper.onUpgrade(db, 0, 1);
+        if (ismBound()) {
+            mService.oldCursor = null;
+        }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        Log.i(TAG, "onCreateLoader: ~~");
+        String[] projection = {
+                DB_TOUCH_TYPE,
+                DB_X,
+                DB_Y,
+                DB_CREATED,
+                DB_RECEIVED
+        };
+        return new CursorLoader(this,
+                MyContentProvider.CONTENT_REMOTE_URI, projection, null, null, null);
+    }
+
+
     public void init() {
+        Log.i(TAG, "init: ~~");
         DbHelper dbHelper = new DbHelper(this);
         dbHelper.onUpgrade(dbHelper.getWritableDatabase(), 0, 1);
         getLoaderManager().initLoader(0, null, this);
@@ -587,7 +571,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        cursor.setNotificationUri(getContentResolver(), MyContentProvider.CONTENT_URI);
+//        Log.i(TAG, "onLoadFinished: ~~------------------------------------------");
+        cursor.setNotificationUri(getContentResolver(), MyContentProvider.CONTENT_REMOTE_URI);
         if (oldCursor != null) {
             int diff = cursor.getCount() - oldCursor.getCount();
             setViewModelTouch(cursor, oldCursor.getCount());
@@ -602,6 +587,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         int i = position;
         ArrayList<Touch> al = new ArrayList<>();
         while (cursor.moveToPosition(i)) {
+           /* Log.i(TAG, "~~" + cursor.getString(0) + " creat:" + cursor.getString(3)
+                    + " clientRec:" + cursor.getString(4));*/
             Touch touch = new Touch();
             touch.touchType = cursor.getString(0);
             touch.x = cursor.getFloat(1);
@@ -627,6 +614,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
 //        dataAdapter.swapCursor(null);
+    }
+
+    public void saveToLocalDatabase(Date created, float x, float y, String touchType) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DB_TOUCH_TYPE, touchType);
+        contentValues.put(DB_X, x);
+        contentValues.put(DB_Y, y);
+        contentValues.put(DB_CREATED, dateFormat.format(created));
+        getContentResolver().insert(MyContentProvider.CONTENT_LOCAL_URI, contentValues);
     }
 
 

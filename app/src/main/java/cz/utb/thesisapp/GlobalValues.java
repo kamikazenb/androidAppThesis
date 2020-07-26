@@ -7,15 +7,18 @@ import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_START;
 import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_UP;
 
 public class GlobalValues {
+//    variables for testing function
+    public static final int TOUCH_SLEEP_MIN = 50;
+    public static final int TOUCH_SLEEP_BASE = 250;
+    public static final int TOUCH_ITERATIONS = 5;
+
+    public static final int SLEEP_BEFORE_EXPORT_DB = 1500;
+
     public static final int TOUCH_NO_TEST = 0;
     public static final int TOUCH_START_TEST = 1;
     public static final int TOUCH_BREAK_TEST = 2;
     public static final int TOUCH_TEST_FINISHED = 4;
     public static final int TOUCH_FAB_TOUCHED = 3;
-
-    public static final int TOUCH_SLEEP_MIN = 50;
-    public static final int TOUCH_SLEEP_BASE = 250;
-    public static final int TOUCH_ITERATIONS = 500;
     //broadcast filters
     public static final String FILTER_KRYO = "kryo";
     public static final String FILTER_INFO = "info";
@@ -47,22 +50,16 @@ public class GlobalValues {
 
     public static final String DB_DATABASE_NAME = "appDB";
     public static final String DB_ID = "id";
-    public static final String DB_TABLE_NAME = "touch";
+    public static final String DB_TABLE_REMOTE = "touchRemote";
+    public static final String DB_TABLE_LOCAL = "touchLocal";
     public static final String DB_X = "x";
     public static final String DB_Y = "y";
     public static final String DB_TOUCH_TYPE = "touchType";
-    public static final String DB_CLIENT_CREATED = "clientCreated";
-    public static final String DB_CLIENT_RECEIVED = "clientReceived";
+    public static final String DB_CREATED = "clientCreated";
+    public static final String DB_RECEIVED = "clientReceived";
 
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
-    static public class Touch {
-        public float x;
-        public float y;
-        public String touchType;
-        public Date clientCreated;
-        public Date clientReceived;
-    }
 
     public static final String API_PORT = ":50202";
     public static final String API_REST = "/rest";
@@ -70,6 +67,30 @@ public class GlobalValues {
     public static final String API_TOUCH = "/touch";
     public static final String API_SSE = "/sse";
 
+    static public class Touch {
+        public Touch(float x, float y, String touchType, Date clientCreated, Date clientReceived) {
+            this.x = x;
+            this.y = y;
+            this.touchType = touchType;
+            this.clientCreated = clientCreated;
+            this.clientReceived = clientReceived;
+        }
 
+        public Touch(String touchType, float x, float y, Date clientCreated) {
+            this.x = x;
+            this.y = y;
+            this.touchType = touchType;
+            this.clientCreated = clientCreated;
+        }
 
+        public Touch() {
+
+        }
+
+        public float x;
+        public float y;
+        public String touchType;
+        public Date clientCreated;
+        public Date clientReceived;
+    }
 }

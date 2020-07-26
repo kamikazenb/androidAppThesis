@@ -6,9 +6,11 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import cz.utb.thesisapp.GlobalValues;
 import cz.utb.thesisapp.services.Broadcast;
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.services.TokenGenerator;
@@ -56,14 +58,19 @@ public class KryoClient {
                     Log.i(TAG, "received: ~~if (object instanceof Network.RegisteredUsers) {");
                     NetworkRegisteredUsers(connection, object, client);
                 }
-                if (object instanceof Network.Touch) {
-                    broadcast.sendFloats(FILTER_TOUCH, ((Network.Touch) object).touchType,
-                            ((Network.Touch) object).x, ((Network.Touch) object).y);
-                    service.saveToLocalDatabase(((Network.Touch) object).clientCreated,
-                            new Date(System.currentTimeMillis()),
-                            ((Network.Touch) object).x,
-                            ((Network.Touch) object).y,
-                            ((Network.Touch) object).touchType);
+                if (object instanceof Network.Touches) {
+
+                    for (Network.Touch touch : ((Network.Touches) object).values) {
+//                        Log.i(TAG, "received: ~~Get touch "+touch.touchType);
+                        broadcast.sendFloats(FILTER_TOUCH, touch.touchType,
+                                touch.x, touch.y);
+                        service.saveToRemoteDatabase(touch.clientCreated,
+                                new Date(System.currentTimeMillis()),
+                                touch.x,
+                                touch.y,
+                                touch.touchType);
+                    }
+
                 }
                 if (object instanceof Network.UseDatabase) {
                     Log.i(TAG, "received: ~~useDatabase");
@@ -80,6 +87,7 @@ public class KryoClient {
                     broadcast.sendValue(FILTER_KRYO, EXTRA_USER_INFO, "connections to kryonet successful");
                     broadcast.sendValue(FILTER_KRYO, EXTRA_COMMAND, EXTRA_COMMAND_SET_CHECKED);
                     clientsConnected = true;
+                    service.kryo = true;
                 } catch (IOException ex) {
                     ex.printStackTrace();
                     setClientsConnected(false);
@@ -118,17 +126,13 @@ public class KryoClient {
         t.start();
     }
 
-    public void sendTouch(float x, float y, String touchType) {
-        Network.Touch touch = new Network.Touch();
-        touch.x = x;
-        touch.y = y;
-        touch.clientCreated = new Date(System.currentTimeMillis());
-        touch.touchType = touchType;
-
-        final Network.Touch sendTouch = touch;
+    public void sendTouches(ArrayList<Network.Touch> values) {
+        Network.Touches touches = new Network.Touches();
+        touches.values = values;
+        final Network.Touches sendTouches = touches;
         Thread t = new Thread() {
             public void run() {
-                client.sendTCP(sendTouch);
+                client.sendTCP(sendTouches);
             }
         };
         t.start();
@@ -170,6 +174,7 @@ public class KryoClient {
     public void stopClient() {
         try {
             client.stop();
+            service.kryo = false;
         } catch (Exception e) {
         }
         broadcast.sendValue(FILTER_KRYO, EXTRA_CONNECTION_CLOSED, "Kryonet: connection NA");

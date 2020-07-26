@@ -188,16 +188,39 @@ public class TouchFragment extends Fragment {
                             mp.start();
                             Vibrator vibe = (Vibrator) act.getSystemService(Context.VIBRATOR_SERVICE);
                             vibe.vibrate(100);
-                            ((MainActivity) act).exportDB();
+
+                            Thread t = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    synchronized (this) {
+                                        try {
+                                            Thread.sleep(SLEEP_BEFORE_EXPORT_DB);
+                                            (getActivity()).runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Date time = new Date();
+                                                    ((MainActivity) act).exportDB(DB_TABLE_LOCAL, time);
+                                                    ((MainActivity) act).exportDB(DB_TABLE_REMOTE, time);
+                                                    try {
+                                                        dvThisApp.clear();
+                                                        dvRemoteApp.clear();
+                                                    } catch (Exception e) {
+                                                        Log.i(TAG, "onChanged: ~~" + e);
+                                                    }
+                                                }
+                                            });
+                                        } catch (Exception e) {
+//                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            });
+                            t.start();
+
                         }
-                        try {
-                            dvThisApp.clear();
-                            dvRemoteApp.clear();
-                        } catch (Exception e) {
-                            Log.i(TAG, "onChanged: ~~" + e);
-                        }
-                        android.os.Process.killProcess(android.os.Process.myPid());
-                        System.exit(1);
+
+//                        android.os.Process.killProcess(android.os.Process.myPid());
+//                        System.exit(1);
                         touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_NO_TEST:
