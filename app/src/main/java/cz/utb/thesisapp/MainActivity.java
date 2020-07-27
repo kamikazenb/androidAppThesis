@@ -149,26 +149,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-    /**
-     * Checks if the app has permission to write to device storage
-     * <p>
-     * If the app does not has permission then the user will be prompted to grant permissions
-     *
-     * @param activity
-     */
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
-    }
 
 
     public boolean ismBound() {
@@ -400,6 +380,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Intent i = new Intent(this, MyService.class);
         bindService(i, connection, Context.BIND_AUTO_CREATE);
     }
+    /**
+     * Defines callbacks for service binding, passed to bindService()
+     */
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            MyService.MyBinder binder = (MyService.MyBinder) service;
+            mService = binder.getService();
+            mBound = true;
+            homeViewModel.setmBounded(mBound);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+            homeViewModel.setmBounded(mBound);
+        }
+    };
 
     public void startDownloadTest() {
         if (ismBound()) {
@@ -433,26 +433,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         LocalBroadcastManager.getInstance(this).unregisterReceiver(kryoReceiver);
     }
 
-    /**
-     * Defines callbacks for service binding, passed to bindService()
-     */
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            MyService.MyBinder binder = (MyService.MyBinder) service;
-            mService = binder.getService();
-            mBound = true;
-            homeViewModel.setmBounded(mBound);
-        }
 
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
-            homeViewModel.setmBounded(mBound);
-        }
-    };
 
     //old
     @Override
@@ -606,7 +587,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         touchViewModel.setTouch(al);
     }
-
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {

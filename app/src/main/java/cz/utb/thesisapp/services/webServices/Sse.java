@@ -41,6 +41,7 @@ public class Sse {
         @Override
         public void onMessage(ServerSentEvent sse, String id, String event, String message) {
             try {
+                Log.i(TAG, "onMessage: ~~" + df.format(new Date()) + message);
                 JSONObject jo = new JSONObject(message);
                 myService.saveToRemoteDatabase(
                         df.parse(jo.getString("clientCreated")),
@@ -94,7 +95,7 @@ public class Sse {
     public void start(String ipAddress, String token) {
         request = new Request.Builder().url("http://" + ipAddress + API_PORT + API_SSE + "/" + token).build();
         okSse = new OkSse();
-        Log.i(TAG, "start: ~~startSSE");
+        Log.i(TAG, "start: ~~startSSE token "+token);
         Thread t = new Thread() {
             public void run() {
                 sse = okSse.newServerSentEvent(request, listener);
@@ -104,7 +105,7 @@ public class Sse {
     }
 
     public void stop() {
-        if(sse != null){
+        if (sse != null) {
             sse.close();
         }
         myService.webservices = false;

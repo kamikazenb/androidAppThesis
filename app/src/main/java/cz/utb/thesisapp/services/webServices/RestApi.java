@@ -12,6 +12,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -101,29 +102,35 @@ public class RestApi {
     }
 
     public void sendTouch(ArrayList<Network.Touch> touches) {
-        for (Network.Touch touch : touches) {
-            apiHandler(touch);
-        }
-    }
 
-    public void apiHandler(Network.Touch touch) {
-        JSONObject joTouch = new JSONObject();
+        JSONArray joArray = new JSONArray();
         JSONObject joClient = new JSONObject();
         JSONObject joSend = new JSONObject();
+        for (Network.Touch touch : touches) {
+            try {
+                JSONObject joTouch = new JSONObject();
+                joTouch.put("x", touch.x);
+                joTouch.put("y", touch.y);
+                joTouch.put("touchType", touch.touchType);
+                joTouch.put("clientCreated", df.format(touch.clientCreated));
+                joArray.put(joTouch);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         try {
-            joTouch.put("x", touch.x);
-            joTouch.put("y", touch.y);
-            joTouch.put("touchType", touch.touchType);
-            joTouch.put("clientCreated", df.format(touch.clientCreated));
             joClient.put("token", token);
             joClient.put("name", "");
-            joSend.put("touch", joTouch);
+            joSend.put("touches", joArray);
             joSend.put("client", joClient);
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        apiHandler(joSend);
+    }
 
-        Log.i(TAG, "sendTouch: ~~" + joSend.toString());
+    public void apiHandler(JSONObject joSend) {
+
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url + API_TOUCH,
                 new Response.Listener<String>() {

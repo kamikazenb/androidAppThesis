@@ -10,7 +10,7 @@ public class GlobalValues {
 //    variables for testing function
     public static final int TOUCH_SLEEP_MIN = 50;
     public static final int TOUCH_SLEEP_BASE = 250;
-    public static final int TOUCH_ITERATIONS = 5;
+    public static final int TOUCH_ITERATIONS = 400;
 
     public static final int SLEEP_BEFORE_EXPORT_DB = 1500;
 
