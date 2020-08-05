@@ -1,0 +1,262 @@
+@startuml
+
+title __APP's Class Diagram__\n
+
+  namespace cz.utb.thesisapp {
+    class cz.utb.thesisapp.BuildConfig {
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    class cz.utb.thesisapp.GlobalValues {
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    class cz.utb.thesisapp.MainActivity {
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    class cz.utb.thesisapp.ThesisApp {
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace contentProvider {
+      class cz.utb.thesisapp.contentProvider.CSVWriter {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace contentProvider {
+      class cz.utb.thesisapp.contentProvider.DbHelper {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace contentProvider {
+      class cz.utb.thesisapp.contentProvider.MyContentProvider {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.Broadcast {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.MyService {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.SNTPClient {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.SpeedTest {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.TokenGenerator {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      namespace firebase {
+        class cz.utb.thesisapp.services.firebase.FirebaseClient {
+        }
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      namespace kryonet {
+        class cz.utb.thesisapp.services.kryonet.ClientClassExtension {
+        }
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      namespace kryonet {
+        class cz.utb.thesisapp.services.kryonet.KryoClient {
+        }
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      namespace kryonet {
+        class cz.utb.thesisapp.services.kryonet.Network {
+        }
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      namespace webServices {
+        class cz.utb.thesisapp.services.webServices.RestApi {
+        }
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      namespace webServices {
+        class cz.utb.thesisapp.services.webServices.Sse {
+        }
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace ui.home {
+      class cz.utb.thesisapp.ui.home.HomeFragment {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace ui.home {
+      class cz.utb.thesisapp.ui.home.HomeViewModel {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace ui.info {
+      class cz.utb.thesisapp.ui.info.InfoFragment {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace ui.info {
+      class cz.utb.thesisapp.ui.info.InfoViewModel {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace ui.touch {
+      class cz.utb.thesisapp.ui.touch.MyDrawingView {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace ui.touch {
+      class cz.utb.thesisapp.ui.touch.TouchFragment {
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace ui.touch {
+      class cz.utb.thesisapp.ui.touch.TouchViewModel {
+      }
+    }
+  }
+  
+
+  cz.utb.thesisapp.MainActivity .up.|> android.app.LoaderManager.LoaderCallbacks
+  cz.utb.thesisapp.MainActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  cz.utb.thesisapp.MainActivity o-- cz.utb.thesisapp.services.MyService : mService
+  cz.utb.thesisapp.MainActivity o-- cz.utb.thesisapp.ui.home.HomeViewModel : homeViewModel
+  cz.utb.thesisapp.MainActivity o-- cz.utb.thesisapp.ui.info.InfoViewModel : infoViewModel
+  cz.utb.thesisapp.MainActivity o-- cz.utb.thesisapp.ui.touch.TouchViewModel : touchViewModel
+  cz.utb.thesisapp.ThesisApp -up-|> android.app.Application
+  cz.utb.thesisapp.contentProvider.DbHelper -up-|> android.database.sqlite.SQLiteOpenHelper
+  cz.utb.thesisapp.contentProvider.MyContentProvider -up-|> android.content.ContentProvider
+  cz.utb.thesisapp.contentProvider.MyContentProvider o-- cz.utb.thesisapp.contentProvider.DbHelper : dbHelper
+  cz.utb.thesisapp.services.Broadcast o-- cz.utb.thesisapp.services.MyService : myService
+  cz.utb.thesisapp.services.MyService .up.|> android.content.Loader.OnLoadCompleteListener
+  cz.utb.thesisapp.services.MyService -up-|> android.app.Service
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.firebase.FirebaseClient : firebaseClient
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.kryonet.KryoClient : kryoClient
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.webServices.RestApi : restApi
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.SpeedTest : speedTest
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.webServices.Sse : sse
+  cz.utb.thesisapp.services.SNTPClient o-- cz.utb.thesisapp.services.SNTPClient.Listener : listener
+  cz.utb.thesisapp.services.SpeedTest o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.firebase.FirebaseClient o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.firebase.FirebaseClient o-- cz.utb.thesisapp.services.MyService : myService
+  cz.utb.thesisapp.services.kryonet.ClientClassExtension -up-|> com.esotericsoftware.kryonet.Client
+  cz.utb.thesisapp.services.kryonet.KryoClient o-- cz.utb.thesisapp.services.kryonet.ClientClassExtension : client
+  cz.utb.thesisapp.services.kryonet.KryoClient o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.kryonet.KryoClient o-- cz.utb.thesisapp.services.MyService : service
+  cz.utb.thesisapp.services.kryonet.KryoClient o-- cz.utb.thesisapp.services.TokenGenerator : tokenGenerator
+  cz.utb.thesisapp.services.webServices.RestApi o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.webServices.Sse o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.webServices.Sse o-- cz.utb.thesisapp.services.MyService : myService
+  cz.utb.thesisapp.ui.home.HomeFragment -up-|> androidx.fragment.app.Fragment
+  cz.utb.thesisapp.ui.home.HomeFragment o-- cz.utb.thesisapp.ui.home.HomeViewModel : homeViewModel
+  cz.utb.thesisapp.ui.home.HomeViewModel -up-|> androidx.lifecycle.ViewModel
+  cz.utb.thesisapp.ui.info.InfoFragment -up-|> androidx.fragment.app.Fragment
+  cz.utb.thesisapp.ui.info.InfoFragment o-- cz.utb.thesisapp.ui.info.InfoViewModel : infoViewModel
+  cz.utb.thesisapp.ui.info.InfoViewModel -up-|> androidx.lifecycle.ViewModel
+  cz.utb.thesisapp.ui.touch.MyDrawingView -up-|> android.view.View
+  cz.utb.thesisapp.ui.touch.TouchFragment -up-|> androidx.fragment.app.Fragment
+  cz.utb.thesisapp.ui.touch.TouchFragment o-- cz.utb.thesisapp.ui.touch.MyDrawingView : dvRemoteApp
+  cz.utb.thesisapp.ui.touch.TouchFragment o-- cz.utb.thesisapp.ui.touch.MyDrawingView : dvThisApp
+  cz.utb.thesisapp.ui.touch.TouchFragment o-- cz.utb.thesisapp.ui.info.InfoViewModel : infoViewModel
+  cz.utb.thesisapp.ui.touch.TouchFragment o-- cz.utb.thesisapp.ui.touch.TouchViewModel : touchViewModel
+  cz.utb.thesisapp.ui.touch.TouchViewModel -up-|> androidx.lifecycle.ViewModel
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

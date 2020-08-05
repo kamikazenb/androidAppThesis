@@ -23,7 +23,7 @@ public class HomeViewModel extends ViewModel {
         mBounded.setValue(false);
         requireRefresh.setValue(false);
         kryoConnected.setValue(false);
-        kryoUseDatabase.setValue(true);
+        kryoUseDatabase.setValue(false);
         webConnected.setValue(false);
         firebaseConnected.setValue(false);
         firebaseRemoteListener.setValue(false);

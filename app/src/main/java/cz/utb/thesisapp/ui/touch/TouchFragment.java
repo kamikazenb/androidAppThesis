@@ -207,6 +207,8 @@ public class TouchFragment extends Fragment {
                                                     } catch (Exception e) {
                                                         Log.i(TAG, "onChanged: ~~" + e);
                                                     }
+//                                                    android.os.Process.killProcess(android.os.Process.myPid());
+//                                                    System.exit(1);
                                                 }
                                             });
                                         } catch (Exception e) {
@@ -219,8 +221,7 @@ public class TouchFragment extends Fragment {
 
                         }
 
-//                        android.os.Process.killProcess(android.os.Process.myPid());
-//                        System.exit(1);
+//
                         touchViewModel.setTest(TOUCH_NO_TEST);
                         break;
                     case TOUCH_NO_TEST:

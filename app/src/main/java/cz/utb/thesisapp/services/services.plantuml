@@ -1,0 +1,162 @@
+@startuml
+
+title __SERVICES's Class Diagram__\n
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.Broadcast {
+          {static} - TAG : String
+          + Broadcast()
+          + sendFloats()
+          + sendInfoFragmentSpeed()
+          + sendServiceArrayList()
+          + sendValue()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.MyService {
+          + firebase : boolean
+          + kryo : boolean
+          + oldCursor : Cursor
+          + webservices : boolean
+          ~ df : SimpleDateFormat
+          {static} - TAG : String
+          - mBinder : IBinder
+          - mCursorLoader : CursorLoader
+          - mGenerator : Random
+          + onBind()
+          + onCreate()
+          + onDestroy()
+          + onLoadComplete()
+          + onTaskRemoved()
+          + saveToRemoteDatabase()
+          + setViewModelTouch()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.MyService.MyBinder {
+          + getService()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.SNTPClient {
+          {static} + TAG : String
+          {static} - NTP_MODE_CLIENT : int
+          {static} - NTP_PACKET_SIZE : int
+          {static} - NTP_PORT : int
+          {static} - NTP_VERSION : int
+          {static} - OFFSET_1900_TO_1970 : long
+          {static} - ORIGINATE_TIME_OFFSET : int
+          {static} - RECEIVE_TIME_OFFSET : int
+          {static} - REFERENCE_TIME_OFFSET : int
+          {static} - TRANSMIT_TIME_OFFSET : int
+          - mNtpTime : long
+          - mNtpTimeReference : long
+          - mRoundTripTime : long
+          {static} + getDate()
+          + getNtpTime()
+          + getNtpTimeReference()
+          + getRoundTripTime()
+          + requestTime()
+          ~ SNTPClient()
+          - read32()
+          - readTimeStamp()
+          - writeTimeStamp()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      interface cz.utb.thesisapp.services.SNTPClient.Listener {
+          {abstract} + onError()
+          {abstract} + onTimeReceived()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.SpeedTest {
+          ~ speedTestSocket : SpeedTestSocket
+          {static} - TAG : String
+          + SpeedTest()
+          + onCompleteTask()
+          + onErrorTask()
+          + onProgressTask()
+          + startDownload()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.SpeedTest.DownloadSpeedTask {
+          # doInBackground()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.SpeedTest.UploadSpeedTask {
+          # doInBackground()
+      }
+    }
+  }
+  
+
+  namespace cz.utb.thesisapp {
+    namespace services {
+      class cz.utb.thesisapp.services.TokenGenerator {
+          - characters : String
+          + generateRandom()
+      }
+    }
+  }
+  
+
+  cz.utb.thesisapp.services.Broadcast o-- cz.utb.thesisapp.services.MyService : myService
+  cz.utb.thesisapp.services.MyService .up.|> android.content.Loader.OnLoadCompleteListener
+  cz.utb.thesisapp.services.MyService -up-|> android.app.Service
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.firebase.FirebaseClient : firebaseClient
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.kryonet.KryoClient : kryoClient
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.webServices.RestApi : restApi
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.SpeedTest : speedTest
+  cz.utb.thesisapp.services.MyService o-- cz.utb.thesisapp.services.webServices.Sse : sse
+  cz.utb.thesisapp.services.MyService +-down- cz.utb.thesisapp.services.MyService.MyBinder
+  cz.utb.thesisapp.services.MyService.MyBinder -up-|> android.os.Binder
+  cz.utb.thesisapp.services.SNTPClient o-- cz.utb.thesisapp.services.SNTPClient.Listener : listener
+  cz.utb.thesisapp.services.SNTPClient +-down- cz.utb.thesisapp.services.SNTPClient.Listener
+  cz.utb.thesisapp.services.SpeedTest o-- cz.utb.thesisapp.services.Broadcast : broadcast
+  cz.utb.thesisapp.services.SpeedTest +-down- cz.utb.thesisapp.services.SpeedTest.DownloadSpeedTask
+  cz.utb.thesisapp.services.SpeedTest +-down- cz.utb.thesisapp.services.SpeedTest.UploadSpeedTask
+  cz.utb.thesisapp.services.SpeedTest.DownloadSpeedTask -up-|> android.os.AsyncTask
+  cz.utb.thesisapp.services.SpeedTest.UploadSpeedTask -up-|> android.os.AsyncTask
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

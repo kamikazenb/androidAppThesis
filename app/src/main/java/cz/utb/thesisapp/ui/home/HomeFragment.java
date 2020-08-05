@@ -52,6 +52,7 @@ public class HomeFragment extends Fragment {
         homeViewModel.getKryoUseDatabase().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
+                Log.i(TAG, "onChanged: ~~db usage"+aBoolean);
                 ((Switch) root.findViewById(R.id.sKryoDB)).setChecked(aBoolean);
             }
         });

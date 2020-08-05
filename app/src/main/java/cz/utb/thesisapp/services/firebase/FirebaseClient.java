@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cz.utb.thesisapp.GlobalValues;
-import cz.utb.thesisapp.MyMap;
 import cz.utb.thesisapp.services.Broadcast;
 import cz.utb.thesisapp.services.MyService;
 import cz.utb.thesisapp.services.kryonet.Network;
