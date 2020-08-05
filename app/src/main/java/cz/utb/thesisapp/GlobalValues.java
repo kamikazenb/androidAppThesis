@@ -7,12 +7,31 @@ import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_START;
 import static cz.utb.thesisapp.services.kryonet.Network.TOUCH_UP;
 
 public class GlobalValues {
-//    variables for testing function
+
+/*
+████████ ███████ ███████ ████████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ 
+   ██    ██      ██         ██        ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ 
+   ██    █████   ███████    ██        █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ 
+   ██    ██           ██    ██        ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██ 
+   ██    ███████ ███████    ██        ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ 
+                                                                                                        
+*/
+
     public static final int TOUCH_SLEEP_MIN = 50;
     public static final int TOUCH_SLEEP_BASE = 250;
     public static final int TOUCH_ITERATIONS = 500;
 
     public static final int SLEEP_BEFORE_EXPORT_DB = 1500;
+
+/*
+
+    ███████ ████████  █████  ████████ ██  ██████ ███████ 
+    ██         ██    ██   ██    ██    ██ ██      ██      
+    ███████    ██    ███████    ██    ██ ██      ███████ 
+         ██    ██    ██   ██    ██    ██ ██           ██ 
+    ███████    ██    ██   ██    ██    ██  ██████ ███████ 
+    
+    */
 
     public static final int TOUCH_NO_TEST = 0;
     public static final int TOUCH_START_TEST = 1;

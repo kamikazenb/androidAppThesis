@@ -28,8 +28,6 @@ public class Sse {
     private ServerSentEvent sse;
     private MyService myService;
     private Broadcast broadcast;
-    SimpleDateFormat df = new SimpleDateFormat(GlobalValues.DATE_FORMAT);
-
 
     ServerSentEvent.Listener listener = new ServerSentEvent.Listener() {
         @Override
@@ -41,10 +39,10 @@ public class Sse {
         @Override
         public void onMessage(ServerSentEvent sse, String id, String event, String message) {
             try {
-                Log.i(TAG, "onMessage: ~~" + df.format(new Date()) + message);
+                Log.i(TAG, "onMessage: ~~" + new SimpleDateFormat(GlobalValues.DATE_FORMAT).format(new Date()) + message);
                 JSONObject jo = new JSONObject(message);
                 myService.saveToRemoteDatabase(
-                        df.parse(jo.getString("clientCreated")),
+                        new SimpleDateFormat(GlobalValues.DATE_FORMAT).parse(jo.getString("clientCreated")),
                         new Date(System.currentTimeMillis()),
                         (float) jo.getDouble("x"),
                         (float) jo.getDouble("y"),
@@ -93,7 +91,7 @@ public class Sse {
 
 
     public void start(String ipAddress, String token) {
-        request = new Request.Builder().url("http://" + ipAddress + API_PORT + API_SSE + "/" + token).build();
+        request = new Request.Builder().url("http://" + ipAddress + API_PORT + API_SSE + "/" + "token").build();
         okSse = new OkSse();
         Log.i(TAG, "start: ~~startSSE token "+token);
         Thread t = new Thread() {

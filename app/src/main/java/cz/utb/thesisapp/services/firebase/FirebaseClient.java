@@ -27,7 +27,6 @@ public class FirebaseClient {
     MyService myService;
     Broadcast broadcast;
     Firebase fbRemoteListener;
-    Firebase fbSenderThisListener;
     boolean remoteListener = false;
     String token;
     String name;
@@ -76,7 +75,6 @@ public class FirebaseClient {
     public void stop() {
         fbRemoteListener.removeEventListener(listener);
         fbRemoteListener = null;
-        fbSenderThisListener = null;
         myService.firebase = false;
     }
 
@@ -84,8 +82,10 @@ public class FirebaseClient {
     public void start(boolean remoteListener, String token, String name) {
 ////        Log.i(TAG, "start: removed~~");
         this.name = name;
-        fbRemoteListener = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/" + token + "/touch");
-        Firebase bs = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/" + token);
+        Firebase bs = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/" + "token");
+        bs.removeValue();
+        fbRemoteListener = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/" + "token" + "/touch");
+
         bs.child("name").setValue(name);
         start(remoteListener, token);
     }
@@ -97,6 +97,7 @@ public class FirebaseClient {
 
     public void start(boolean remoteListener) {
 ////        Log.i(TAG, "start: ~~" + remoteListener);
+        id = 0;
         this.remoteListener = remoteListener;
         if (!remoteListener) {
             try {
@@ -132,7 +133,6 @@ public class FirebaseClient {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                SimpleDateFormat df = new SimpleDateFormat(GlobalValues.DATE_FORMAT);
                 int row = 0;
                 Map<String, Object> overall = new HashMap<>();
                 for (Network.Touch touch : touches) {
@@ -140,10 +140,10 @@ public class FirebaseClient {
                     values.put("x", String.valueOf(touch.x));
                     values.put("y", String.valueOf(touch.y));
                     values.put("touchType", touch.touchType);
-                    values.put("clientCreated", df.format(touch.clientCreated));
+                    values.put("clientCreated",  new SimpleDateFormat(GlobalValues.DATE_FORMAT).format(touch.clientCreated));
                     overall.put(String.valueOf(row++), values);
                 }
-                Firebase fb = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/" + token + "/touch/" + id++);
+                Firebase fb = new Firebase("https://thesis-app-efcd9.firebaseio.com/clients/" + "token" + "/touch/" + id++);
                 fb.updateChildren(overall);
                 if (!remoteListener) {
                     fb.runTransaction(new Transaction.Handler() {
@@ -160,7 +160,7 @@ public class FirebaseClient {
                             if (firebaseError != null || !success || dataSnapshot == null) {
                                 Log.i(TAG, "onComplete: ~~Failed to get DataSnapshot");
                             } else {
-                                useNewData(dataSnapshot, df);
+                                useNewData(dataSnapshot,  new SimpleDateFormat(GlobalValues.DATE_FORMAT));
 //                                System.out.println("Successfully get DataSnapshot");
                                 //handle data here
                             }
@@ -170,8 +170,6 @@ public class FirebaseClient {
             }
         });
         thread.start();
-
-
     }
 
 

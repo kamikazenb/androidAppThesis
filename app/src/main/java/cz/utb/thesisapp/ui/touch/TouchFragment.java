@@ -70,7 +70,6 @@ public class TouchFragment extends Fragment {
     volatile LineData data;
     volatile int dataSize = 1;
     boolean threadRun = true;
-    SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     AsyncTask<Void, Void, Integer> runningTask;
     private Thread thread;
 
@@ -91,6 +90,7 @@ public class TouchFragment extends Fragment {
             dvThisApp = (MyDrawingView) root.findViewById(R.id.scratch_pad);
 //            dvThisApp.setTextView(((TextView) root.findViewById(R.id.tvTouchInfo)));
             dvThisApp.act = act;
+
         }
 
         if (act instanceof MainActivity) {

@@ -39,8 +39,6 @@ public class MyService extends Service implements OnLoadCompleteListener<Cursor>
     private static final String TAG = "MyService";
     // Binder given to clients
     private final IBinder mBinder = new MyBinder();
-    // Random number generator
-    private final Random mGenerator = new Random();
     public Broadcast broadcast = new Broadcast(this);
     public KryoClient kryoClient = new KryoClient(broadcast, this);
     public Sse sse = new Sse(this, broadcast);
@@ -52,8 +50,6 @@ public class MyService extends Service implements OnLoadCompleteListener<Cursor>
     public boolean kryo = false;
     public boolean webservices = false;
     public boolean firebase = false;
-
-    SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -142,7 +138,7 @@ public class MyService extends Service implements OnLoadCompleteListener<Cursor>
             Log.i(TAG, "setViewModelTouch~~" + cursor.getString(0) + " creat:" + cursor.getString(3));
             Date created;
             try {
-                created = df.parse(cursor.getString(3));
+                created = new SimpleDateFormat(DATE_FORMAT).parse(cursor.getString(3));
             } catch (ParseException e) {
 //                Log.i(TAG, "setViewModelTouch: ~~" + e);
                 created = new Date(System.currentTimeMillis());

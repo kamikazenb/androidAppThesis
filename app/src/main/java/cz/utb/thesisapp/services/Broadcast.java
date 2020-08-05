@@ -16,11 +16,9 @@ public class Broadcast {
     private static final String TAG = "Broadcast";
     MyService myService;
 
-
     public Broadcast(MyService myService) {
         this.myService = myService;
     }
-
 
     public void sendFloats(String filter, String extraTouchType, float extraX, float extraY) {
         Intent i = new Intent(filter);

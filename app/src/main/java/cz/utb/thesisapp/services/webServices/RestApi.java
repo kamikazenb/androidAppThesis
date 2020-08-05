@@ -41,7 +41,6 @@ public class RestApi {
     private Service service;
     private Broadcast broadcast;
     private String token;
-    SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
 
     public RestApi(Service service, Broadcast broadcast) {
         this.service = service;
@@ -112,7 +111,7 @@ public class RestApi {
                 joTouch.put("x", touch.x);
                 joTouch.put("y", touch.y);
                 joTouch.put("touchType", touch.touchType);
-                joTouch.put("clientCreated", df.format(touch.clientCreated));
+                joTouch.put("clientCreated", new SimpleDateFormat(DATE_FORMAT).format(touch.clientCreated));
                 joArray.put(joTouch);
             } catch (JSONException e) {
                 e.printStackTrace();

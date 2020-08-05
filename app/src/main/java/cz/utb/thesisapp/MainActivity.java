@@ -1,7 +1,5 @@
 package cz.utb.thesisapp;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -11,23 +9,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
-
-import com.firebase.client.Firebase;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.navigation.NavigationView;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
-
-import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -46,10 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import cz.utb.thesisapp.contentProvider.CSVWriter;
 import cz.utb.thesisapp.contentProvider.DbHelper;
@@ -60,9 +49,7 @@ import cz.utb.thesisapp.ui.home.HomeFragment;
 import cz.utb.thesisapp.ui.home.HomeViewModel;
 import cz.utb.thesisapp.ui.info.InfoViewModel;
 import cz.utb.thesisapp.ui.touch.TouchViewModel;
-
 import android.app.LoaderManager;
-
 import static cz.utb.thesisapp.GlobalValues.*;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -72,23 +59,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public MyService mService;
     boolean mBound = false;
     Context context;
-    String currentlyShownTag;
-    public LinkedHashMap<Integer, Date> operation = new LinkedHashMap<>();
     private HomeViewModel homeViewModel;
     private InfoViewModel infoViewModel;
     private TouchViewModel touchViewModel;
-    private SimpleCursorAdapter dataAdapter;
     private Cursor oldCursor;
-    SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
     private String token;
-    private Firebase firebase;
-    private final static Lock lock = new ReentrantLock();
 
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,13 +78,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        /*  FloatingActionButton fab = findViewById(R.id.fab);*/
         context = this;
-      /*  fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            }
-        });*/
         SpeedDialView speedDialView = findViewById(R.id.speedDial);
         speedDialView.addActionItem(
                 new SpeedDialActionItem.Builder(R.id.fab_start_test, R.drawable.ic_network_check_white_36dp).setLabel("test")
@@ -138,18 +108,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-
-        currentlyShownTag = HomeFragment.class.getName();
-
-
-        Log.i(TAG, "onCreate: ~~");
-
-        init();
-
+        DbHelper dbHelper = new DbHelper(this);
+        dbHelper.onUpgrade(dbHelper.getWritableDatabase(), 0, 1);
+        getLoaderManager().initLoader(0, null, this);
     }
-
-
-
 
     public boolean ismBound() {
         return mBound;
@@ -252,25 +214,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void sendTouch(float x, float y, String touchType) {
         saveToLocalDatabase(new Date(System.currentTimeMillis()), x, y, touchType);
-      /*  if (ismBound()) {
-            if (mService.kryoClient.isClientConnected()) {
-                addTimeStamp(x, y);
-                mService.kryoClient.sendTouch(x, y, touchType);
-            } else if (homeViewModel.getWebConnected().getValue()) {
-                addTimeStamp(x, y);
-                mService.restApi.sendTouch(x, y, touchType, token);
-            } else if (homeViewModel.getFirebaseConnected().getValue()) {
-                addTimeStamp(x, y);
-                mService.firebaseClient.sendTouch(x, y, touchType);
-
-
-            }*
-        }/
-    }
-
-    public void addTimeStamp(float x, float y) {
-    /*    Float z = x + y;
-        operation.put(z.hashCode(), new Date(System.currentTimeMillis()));*/
     }
 
 
@@ -482,7 +425,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             exportDir.mkdirs();
         }
 
-        File file = new File(exportDir, dateFormat.format(time) + " " + databaseType + ".csv");
+        File file = new File(exportDir, new SimpleDateFormat(DATE_FORMAT).format(time) + " " + databaseType + ".csv");
         try {
             file.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
@@ -542,9 +485,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void init() {
         Log.i(TAG, "init: ~~");
-        DbHelper dbHelper = new DbHelper(this);
-        dbHelper.onUpgrade(dbHelper.getWritableDatabase(), 0, 1);
-        getLoaderManager().initLoader(0, null, this);
+
 
     }
 
@@ -568,15 +509,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         int i = position;
         ArrayList<Touch> al = new ArrayList<>();
         while (cursor.moveToPosition(i)) {
-           /* Log.i(TAG, "~~" + cursor.getString(0) + " creat:" + cursor.getString(3)
-                    + " clientRec:" + cursor.getString(4));*/
             Touch touch = new Touch();
             touch.touchType = cursor.getString(0);
             touch.x = cursor.getFloat(1);
             touch.y = cursor.getFloat(2);
             try {
-                touch.clientCreated = dateFormat.parse(cursor.getString(3));
-                touch.clientReceived = dateFormat.parse(cursor.getString(4));
+                touch.clientCreated = new SimpleDateFormat(DATE_FORMAT).parse(cursor.getString(3));
+                touch.clientReceived = new SimpleDateFormat(DATE_FORMAT).parse(cursor.getString(4));
             } catch (ParseException e) {
                 Log.i(TAG, "setViewModelTouch: ~~" + e);
                 touch.clientCreated = new Date(System.currentTimeMillis());
